@@ -42,3 +42,30 @@ To assist in iterating through these arrays, GCC's internal linker
 script defines the symbols `__(preinit,init,fini)_array_(start,end)` in
 the appropriate sections marking the first function in each and the end
 of the array.
+
+# The `_start` Symbol
+
+Arguments to `_start` are on the stack for all platforms.
+The top of the stack is structured as so:
+
+* argument count
+* array of argument pointers
+* an empty string
+* array of environment pointers
+* a null terminator
+* array of auxiliary vector entries
+* an 'zero' auxiliary vector
+* unspecified data
+
+For simplicity, we simply pass a pointer to the stack to the C entry in
+the runtime and dissasemble the stack there. The entry we use is as
+follows:
+
+```c
+void _start_c(void *stack);
+```
+
+NOTE: `_start_c` is a void function as it should call the non-returning
+`_exit` symbol after calling `main`.
+
+
