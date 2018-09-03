@@ -7,7 +7,7 @@ _start:
 	mov lr, 0
 
 	mov a1, sp
-	bl _start_c
+	bl __sel4_start_c
 
 	/* should not return */
 1:

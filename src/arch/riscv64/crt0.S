@@ -5,7 +5,7 @@ _start:
 	li ra, 0
 
 	addi  a0, sp, 0
-	jal  ra, _start_c
+	jal  ra, __sel4_start_c
 
 	/* should not return */
 1:

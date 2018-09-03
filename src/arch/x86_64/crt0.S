@@ -1,12 +1,11 @@
 .section .text
 .global _start
 _start:
-	mov fp, #0
-	mov lr, #0
+	movq %rsp, %rbp
 
-	mov x0, sp
-	bl _start_c
+	push 0(%rbp)
+	call __sel4_start_c
 
 	/* should not return */
 1:
-	b 1b
+	jmp  1b

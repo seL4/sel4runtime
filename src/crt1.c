@@ -1,23 +1,4 @@
-typedef struct {
-	int a_type;
-	union {
-		long a_val;
-		void *a_ptr;
-		void (*a_fnc)(void);
-	} a_un;
-} auxv_t;
-
-/// The seL4rt entrypoint.
-void __sel4rt_start_main(
-	unsigned long argc,
-	char **argv,
-	char **envp,
-	auxv_t auxv[]
-);
-
-#ifndef NULL
-#define NULL ((void *) 0)
-#endif
+#include "start.h"
 
 /*
  * This function is simply passed a pointer to the inital stack from the
@@ -34,7 +15,7 @@ void __sel4rt_start_main(
  * * an 'zero' auxiliary vector, then
  * * unspecified data.
  */
-void _start_c(void *stack) {
+void __sel4_start_c(void *stack) {
 	// First word on the stack is argument count.
 	unsigned long argc = *((unsigned long *) stack);
 
@@ -51,5 +32,5 @@ void _start_c(void *stack) {
 	// The auxiliary vector follows the environment pointer vector.
 	auxv_t *auxv = (void *)(&envp[envc + 1]);
 
-	__sel4rt_start_main(argc, argv, envp, auxv);
+	__sel4rt_start_main(main, argc, argv, envp, auxv);
 }
