@@ -58,10 +58,10 @@ the runtime and dissasemble the stack there. The entry we use is as
 follows:
 
 ```c
-void _start_c(void *stack);
+void __sel4_start_c(void *stack);
 ```
 
-NOTE: `_start_c` is a void function as it should call the non-returning
-`_exit` symbol after calling `main`.
+NOTE: `__sel4_start_c` is a void function as it should call the
+non-returning `_exit` symbol after calling `main`.
 
 
