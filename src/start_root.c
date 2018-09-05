@@ -79,12 +79,12 @@ void __sel4_start_root(seL4_BootInfo *boot_info) {
         },
     };
 
-    char *envp[] = {
+    char const * const envp[] = {
         "seL4=1",
         NULL,
     };
 
-    char *argv[] = {
+    char const * const argv[] = {
         "rootserver",
         NULL,
     };

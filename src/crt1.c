@@ -9,6 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <sel4runtime.h>
 #include "start.h"
 
 /*

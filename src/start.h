@@ -32,9 +32,9 @@ typedef struct {
 void __sel4runtime_start_main(
     int (*main)(),
     unsigned long argc,
-    char **argv,
-    char **envp,
-    auxv_t auxv[]
+    char const * const *argv,
+    char const * const *envp,
+    auxv_t const auxv[]
 );
 
 /*
@@ -44,7 +44,7 @@ void __sel4runtime_start_main(
  * functions.
  */
 void __sel4runtime_load_env(
-    char *arg0,
-    char **envp,
-    auxv_t auxv[]
+    char const *arg0,
+    char const * const *envp,
+    auxv_t const auxv[]
 );
