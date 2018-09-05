@@ -18,18 +18,19 @@ config_string(Sel4RuntimeRootStack SEL4RUNTIME_ROOT_STACK
 )
 add_config_library(sel4runtime "${configure_string}")
 
-add_library(
-	sel4runtime_crt_obj OBJECT
-		src/arch/${KernelSel4Arch}/crt0.S
-		src/arch/${KernelSel4Arch}/crti.S
-		src/arch/${KernelSel4Arch}/crtn.S
+file(
+	GLOB crt_files
+		src/arch/${KernelArch}/*
+		src/sel4_arch/${KernelSel4Arch}/*
 )
+
+add_library(sel4runtime_crt_obj OBJECT ${crt_files})
 target_include_directories(
 	sel4runtime_crt_obj
 	PRIVATE src
 	PUBLIC  include
 )
-add_dependencies(sel4runtime_crt_obj Configuration)
+target_link_libraries(sel4runtime_crt_obj Configuration)
 add_custom_command(
 	OUTPUT
 		"${CMAKE_BINARY_DIR}/lib/crt0.o"
@@ -62,7 +63,7 @@ add_custom_target(
 # The sel4runtime library.
 add_library(
 	sel4runtime STATIC
-	src/arch/${KernelSel4Arch}/sel4_crt0.S
+	${crt_files}
 	src/crt1.c
 	src/start.c
 	src/start_root.c
@@ -72,7 +73,7 @@ target_include_directories(
 	PRIVATE src
 	PUBLIC  include
 )
-add_dependencies(sel4runtime sel4runtime_crt)
+add_dependencies(sel4runtime Configuration sel4runtime_crt)
 
 # Currently, elf is required to interpret elf program headers for
 # regions such as the TLS. The elf definitions require an implementation
