@@ -13,22 +13,37 @@ project(sel4runtime C)
 set(configure_string "")
 add_config_library(sel4runtime "${configure_string}")
 
-string(REPLACE " " ";" asm_flags ${CMAKE_ASM_FLAGS})
-
+add_library(
+	sel4runtime_crt_obj OBJECT
+		src/arch/${KernelSel4Arch}/crt0.S
+		src/arch/${KernelSel4Arch}/crti.S
+		src/arch/${KernelSel4Arch}/crtn.S
+)
+target_include_directories(
+	sel4runtime_crt_obj
+	PRIVATE src
+	PUBLIC  include
+)
 add_custom_command(
 	OUTPUT
 		"${CMAKE_BINARY_DIR}/lib/crt0.o"
         "${CMAKE_BINARY_DIR}/lib/crti.o"
         "${CMAKE_BINARY_DIR}/lib/crtn.o"
-	COMMAND ${CMAKE_ASM_COMPILER} ${asm_flags} -c
-		-o ${CMAKE_BINARY_DIR}/lib/crt0.o
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arch/${KernelSel4Arch}/crt0.S
-	COMMAND ${CMAKE_ASM_COMPILER} ${asm_flags} -c
-		-o ${CMAKE_BINARY_DIR}/lib/crti.o
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arch/${KernelSel4Arch}/crti.S
-	COMMAND ${CMAKE_ASM_COMPILER} ${asm_flags} -c
-		-o ${CMAKE_BINARY_DIR}/lib/crtn.o
-		${CMAKE_CURRENT_SOURCE_DIR}/src/arch/${KernelSel4Arch}/crtn.S
+	DEPENDS
+		sel4runtime_crt_obj
+	COMMAND ${CMAKE_COMMAND} -E env cp
+		"$<TARGET_OBJECTS:sel4runtime_crt_obj>"
+		${CMAKE_BINARY_DIR}/lib/
+	COMMAND ${CMAKE_COMMAND} -E env mv
+		${CMAKE_BINARY_DIR}/lib/crt0.S.obj
+		${CMAKE_BINARY_DIR}/lib/crt0.o
+	COMMAND ${CMAKE_COMMAND} -E env mv
+		${CMAKE_BINARY_DIR}/lib/crti.S.obj
+		${CMAKE_BINARY_DIR}/lib/crti.o
+	COMMAND ${CMAKE_COMMAND} -E env mv
+		${CMAKE_BINARY_DIR}/lib/crtn.S.obj
+		${CMAKE_BINARY_DIR}/lib/crtn.o
+	COMMAND_EXPAND_LISTS
 )
 add_custom_target(
 	sel4runtime_crt
