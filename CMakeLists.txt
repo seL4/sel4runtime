@@ -2,16 +2,16 @@
 # Add crt0.o and crti.o to the start of all targets link flags.
 # Add crtn.o to the end of all targets link flags.
 
-# Compile sel4rt library from src.
-# Use src as private includes for crt and sel4rt.
-# Use include as public includes for crt and sel4rt.
+# Compile sel4runtime library from src.
+# Use src as private includes for crt and sel4runtime.
+# Use include as public includes for crt and sel4runtime.
 
 cmake_minimum_required(VERSION 3.5.1)
 
-project(sel4rt C)
+project(sel4runtime C)
 
 set(configure_string "")
-add_config_library(sel4rt "${configure_string}")
+add_config_library(sel4runtime "${configure_string}")
 
 string(REPLACE " " ";" asm_flags ${CMAKE_ASM_FLAGS})
 
@@ -31,27 +31,27 @@ add_custom_command(
 		${CMAKE_CURRENT_SOURCE_DIR}/src/arch/${KernelSel4Arch}/crtn.S
 )
 add_custom_target(
-	sel4rt_crt
+	sel4runtime_crt
 	DEPENDS
 		"${CMAKE_BINARY_DIR}/lib/crt0.o"
         "${CMAKE_BINARY_DIR}/lib/crti.o"
         "${CMAKE_BINARY_DIR}/lib/crtn.o"
 )
 
-# The sel4rt library.
+# The sel4runtime library.
 add_library(
-	sel4rt STATIC
+	sel4runtime STATIC
 	src/arch/${KernelSel4Arch}/sel4_crt0.S
 	src/crt1.c
 	src/start.c
 	src/start_root.c
 )
 target_include_directories(
-	sel4rt
+	sel4runtime
 	PRIVATE src
 	PUBLIC  include
 )
-add_dependencies(sel4rt sel4rt_crt)
+add_dependencies(sel4runtime sel4runtime_crt)
 
 # Currently, elf is required to interpret elf program headers for
 # regions such as the TLS. The elf definitions require an implementation
@@ -59,5 +59,5 @@ add_dependencies(sel4rt sel4rt_crt)
 # currently provides this most conveniently.
 
 # TODO: Remove muslc dependency
-target_link_libraries(sel4rt Configuration sel4 elf muslc)
+target_link_libraries(sel4runtime Configuration sel4 elf muslc)
 

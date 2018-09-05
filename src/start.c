@@ -1,7 +1,7 @@
 #include <sel4/sel4.h>
 #include "start.h"
 
-void __sel4rt_start_main(
+void __sel4runtime_start_main(
 	int (*main)(),
 	unsigned long argc,
 	char **argv,

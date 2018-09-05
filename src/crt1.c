@@ -32,5 +32,5 @@ void __sel4_start_c(void *stack) {
 	// The auxiliary vector follows the environment pointer vector.
 	auxv_t *auxv = (void *)(&envp[envc + 1]);
 
-	__sel4rt_start_main(main, argc, argv, envp, auxv);
+	__sel4runtime_start_main(main, argc, argv, envp, auxv);
 }
