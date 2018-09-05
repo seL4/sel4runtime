@@ -11,6 +11,11 @@ cmake_minimum_required(VERSION 3.5.1)
 project(sel4runtime C)
 
 set(configure_string "")
+config_string(Sel4RuntimeRootStack SEL4RUNTIME_ROOT_STACK
+	"Size of the initial stack for the root task"
+    DEFAULT 16384
+    UNQUOTE
+)
 add_config_library(sel4runtime "${configure_string}")
 
 add_library(
@@ -24,6 +29,7 @@ target_include_directories(
 	PRIVATE src
 	PUBLIC  include
 )
+add_dependencies(sel4runtime_crt_obj Configuration)
 add_custom_command(
 	OUTPUT
 		"${CMAKE_BINARY_DIR}/lib/crt0.o"

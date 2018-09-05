@@ -1,3 +1,5 @@
+#include "autoconf.h"
+
 .section .text
 .global _sel4_start
 _sel4_start:
@@ -11,5 +13,5 @@ _sel4_start:
 .section .bss
 __thread_base:
 	.align 16
-	.space 16384
+	.space CONFIG_SEL4RUNTIME_ROOT_STACK
 __thread_top:
