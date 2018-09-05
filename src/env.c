@@ -1,7 +1,6 @@
 #include <sel4runtime.h>
 #include <sel4/sel4.h>
 
-#undef NULL
 #include "auxv.h"
 #include "start.h"
 
