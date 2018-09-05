@@ -70,7 +70,7 @@ add_library(
 )
 target_include_directories(
 	sel4runtime
-	PRIVATE src
+	PRIVATE src src/mode/${KernelWordSize}
 	PUBLIC  include
 )
 add_dependencies(sel4runtime Configuration sel4runtime_crt)

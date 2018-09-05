@@ -13,7 +13,7 @@
 #include <sel4/sel4.h>
 #include <stdint.h>
 
-#include "elf_helper.h"
+#include "auxv.h"
 #include "start.h"
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
