@@ -92,5 +92,5 @@ add_dependencies(sel4runtime Configuration sel4runtime_crt)
 # currently provides this most conveniently.
 
 # TODO: Remove muslc dependency
-target_link_libraries(sel4runtime Configuration sel4 elf muslc)
+target_link_libraries(sel4runtime Configuration sel4 elf)
 

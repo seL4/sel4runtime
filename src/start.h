@@ -9,14 +9,12 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <stddef.h>
+
 #pragma once
 
 // Entry into C program.
 int main();
-
-#ifndef NULL
-#define NULL ((void *) 0)
-#endif
 
 typedef struct {
 	int a_type;
