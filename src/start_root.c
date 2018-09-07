@@ -42,52 +42,52 @@ extern unsigned int _tbss_end[];
  */
 void __sel4_start_root(seL4_BootInfo *boot_info) {
 
-	uintptr_t tdata_start = (uintptr_t) &_tdata_start[0];
-	uintptr_t tdata_end = (uintptr_t) &_tdata_end[0];
-	uintptr_t tbss_end = (uintptr_t) &_tbss_end[0];
+    uintptr_t tdata_start = (uintptr_t) &_tdata_start[0];
+    uintptr_t tdata_end = (uintptr_t) &_tdata_end[0];
+    uintptr_t tbss_end = (uintptr_t) &_tbss_end[0];
 
-	Elf_Phdr tls_header = {
-		.p_type   = PT_TLS,
-		.p_offset = 0,
-		.p_vaddr  = (Elf_Addr) tdata_start,
-		.p_paddr  = 0,
-		.p_filesz = tdata_end - tdata_start,
-		.p_memsz  = tbss_end - tdata_start,
-		.p_align = 16,
-	};
+    Elf_Phdr tls_header = {
+        .p_type   = PT_TLS,
+        .p_offset = 0,
+        .p_vaddr  = (Elf_Addr) tdata_start,
+        .p_paddr  = 0,
+        .p_filesz = tdata_end - tdata_start,
+        .p_memsz  = tbss_end - tdata_start,
+        .p_align = 16,
+    };
 
-	auxv_t auxv[] = {
-		{
-			.a_type = AT_PHENT,
-			.a_un.a_val = sizeof(Elf32_Phdr),
-		}, {
-			.a_type = AT_PHNUM,
-			.a_un.a_val = 1,
-		}, {
-			.a_type = AT_PHDR,
-			.a_un.a_ptr = &tls_header,
-		}, {
-			.a_type = AT_SEL4_BOOT_INFO,
-			.a_un.a_ptr = boot_info,
-		}, {
-			.a_type = AT_SEL4_TCB,
-			.a_un.a_val = seL4_CapInitThreadTCB,
-		}, {
-			// Null terminating entry
-			.a_type = AT_NULL,
-			.a_un.a_val = 0
-		},
-	};
+    auxv_t auxv[] = {
+        {
+            .a_type = AT_PHENT,
+            .a_un.a_val = sizeof(Elf32_Phdr),
+        }, {
+            .a_type = AT_PHNUM,
+            .a_un.a_val = 1,
+        }, {
+            .a_type = AT_PHDR,
+            .a_un.a_ptr = &tls_header,
+        }, {
+            .a_type = AT_SEL4_BOOT_INFO,
+            .a_un.a_ptr = boot_info,
+        }, {
+            .a_type = AT_SEL4_TCB,
+            .a_un.a_val = seL4_CapInitThreadTCB,
+        }, {
+            // Null terminating entry
+            .a_type = AT_NULL,
+            .a_un.a_val = 0
+        },
+    };
 
-	char *envp[] = {
-		"seL4=1",
-		NULL,
-	};
+    char *envp[] = {
+        "seL4=1",
+        NULL,
+    };
 
-	char *argv[] = {
-		"rootserver",
-		NULL,
-	};
+    char *argv[] = {
+        "rootserver",
+        NULL,
+    };
 
-	__sel4runtime_start_main(main, ARRAY_LENGTH(argv), argv, envp, auxv);
+    __sel4runtime_start_main(main, ARRAY_LENGTH(argv), argv, envp, auxv);
 }
