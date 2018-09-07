@@ -78,6 +78,7 @@ add_library(
 	src/crt1.c
 	src/start.c
 	src/start_root.c
+	src/env.c
 )
 target_include_directories(
 	sel4runtime

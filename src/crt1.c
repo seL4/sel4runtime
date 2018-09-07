@@ -39,7 +39,7 @@ void __sel4_start_c(void *stack) {
     while (envp[envc] != NULL) {
         envc++;
     }
-		    
+
 
     // The auxiliary vector follows the environment pointer vector.
     auxv_t *auxv = (void *)(&envp[envc + 1]);

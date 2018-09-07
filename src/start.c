@@ -19,7 +19,8 @@ void __sel4runtime_start_main(
     char **envp,
     auxv_t auxv[]
 ) {
-    // Simple start to begin with.
+    __sel4runtime_load_env(argv[0], envp, auxv);
+
     main(argc, argv, envp);
     while (1) {
         seL4_Yield();

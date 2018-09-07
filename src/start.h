@@ -25,10 +25,26 @@ typedef struct {
     } a_un;
 } auxv_t;
 
+/*
+ * The this triggers the environment to be set up for the runtime before
+ * the environment is loaded.
+ */
 void __sel4runtime_start_main(
     int (*main)(),
     unsigned long argc,
     char **argv,
+    char **envp,
+    auxv_t auxv[]
+);
+
+/*
+ * This performs all of the work of loading the execution environment.
+ * It mainly operates be loading values out of the environment variables
+ * and auxiliary vectors and into variables accessible via interface
+ * functions.
+ */
+void __sel4runtime_load_env(
+    char *arg0,
     char **envp,
     auxv_t auxv[]
 );
