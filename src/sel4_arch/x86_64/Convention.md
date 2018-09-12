@@ -39,4 +39,6 @@ ret
 
 # Argument Passing
 
-Arguments are passed on the stack in `%rbp+8+(8 * n)`
+Arguments are passed first using registers `%rdi`, `%rsi`, `%rdx`,
+`%rcx`, `%r8`, `%r9`, `%xmm0`–`%xmm7`, then on the stack in
+`%rbp+8+(8 * n)`

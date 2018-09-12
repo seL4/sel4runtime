@@ -13,6 +13,7 @@
 .global _start
 _start:
 	movq %rsp, %rbp
+	movq %rsp, %rdi
 
 	push 0(%rbp)
 	call __sel4_start_c
