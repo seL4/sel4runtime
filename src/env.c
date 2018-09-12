@@ -11,11 +11,11 @@
  */
 #include <sel4runtime.h>
 #include <sel4/sel4.h>
+#include <thread_arch.h>
 
 #include "auxv.h"
 #include "start.h"
 #include "thread.h"
-
 
 static thread_t __initial_thread;
 
@@ -71,7 +71,7 @@ thread_t *__sel4runtime_thread_self(void) {
     if (env.initial_thread != NULL) {
         return env.initial_thread;
     } else {
-        // TODO: Return pointer to thread object in TLS.
+        __sel4runtime_tls_self();
         return NULL;
     }
 }
