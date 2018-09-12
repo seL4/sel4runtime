@@ -18,15 +18,14 @@ char const *sel4runtime_process_name(void);
 /*
  * Descriptors of the process's cspace.
  */
-typedef union {
+typedef struct {
     enum sel4runtime_cspace_tag {
         SEL4RUNTIME_CSPACE_NONE,
         SEL4RUNTIME_CSPACE_BOOTINFO,
     } tag;
-    struct {
-        enum sel4runtime_cspace_tag tag;
-        seL4_BootInfo *cspace;
-    } bootinfo;
+    union {
+        seL4_BootInfo *bootinfo;
+    } cspace;
 } sel4runtime_cspace_t;
 
 /*
@@ -49,7 +48,7 @@ static inline const seL4_BootInfo *sel4runtime_bootinfo(void) {
     sel4runtime_cspace_t const *descriptor
         = sel4runtime_cspace_descriptor();
     if (descriptor->tag == SEL4RUNTIME_CSPACE_BOOTINFO) {
-        return descriptor->bootinfo.cspace;
+        return descriptor->cspace.bootinfo;
     } else {
         return NULL;
     }

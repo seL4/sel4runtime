@@ -70,7 +70,7 @@ static void parse_auxv(auxv_t const auxv[]) {
             break;
         case AT_SEL4_BOOT_INFO:
             env.cspace.tag = SEL4RUNTIME_CSPACE_BOOTINFO;
-            env.cspace.bootinfo.cspace = auxv[i].a_un.a_ptr;
+            env.cspace.cspace.bootinfo = auxv[i].a_un.a_ptr;
             break;
         default:
             break;
