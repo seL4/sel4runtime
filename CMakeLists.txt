@@ -27,18 +27,27 @@ config_string(Sel4RuntimeRootStack SEL4RUNTIME_ROOT_STACK
     DEFAULT 16384
     UNQUOTE
 )
+config_string(Sel4RuntimeStaticTLS SEL4RUNTIME_STATIC_TLS
+	"Size of static TLS area for new processes"
+    DEFAULT 16384
+    UNQUOTE
+)
 add_config_library(sel4runtime "${configure_string}")
 
 file(
 	GLOB crt_files
-		src/arch/${KernelArch}/*
-		src/sel4_arch/${KernelSel4Arch}/*
+		crt/arch/${KernelArch}/*
+		crt/sel4_arch/${KernelSel4Arch}/*
 )
 
 add_library(sel4runtime_crt_obj OBJECT ${crt_files})
 target_include_directories(
 	sel4runtime_crt_obj
-	PRIVATE src
+	PRIVATE
+		src
+		src/mode/${KernelWordSize}
+		src/arch/${KernelArch}
+		src/sel4_arch/${KernelSel4Arch}
 	PUBLIC  include
 )
 target_link_libraries(sel4runtime_crt_obj Configuration)
@@ -71,10 +80,18 @@ add_custom_target(
         "${CMAKE_BINARY_DIR}/lib/crtn.o"
 )
 
+file(
+	GLOB arch_source
+		src/mode/${KernelWordSize}/*
+		src/arch/${KernelArch}/*
+		src/sel4_arch/${KernelSel4Arch}/*
+)
+
 # The sel4runtime library.
 add_library(
 	sel4runtime STATIC
 	${crt_files}
+	${arch_source}
 	src/crt1.c
 	src/start.c
 	src/start_root.c
@@ -82,7 +99,11 @@ add_library(
 )
 target_include_directories(
 	sel4runtime
-	PRIVATE src src/mode/${KernelWordSize}
+	PRIVATE
+		src
+		src/mode/${KernelWordSize}
+		src/arch/${KernelArch}
+		src/sel4_arch/${KernelSel4Arch}
 	PUBLIC  include
 )
 add_dependencies(sel4runtime Configuration sel4runtime_crt)
