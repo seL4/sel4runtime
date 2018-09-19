@@ -19,6 +19,9 @@
 
 // seL4 threads.
 typedef struct {
+    void *self;
+    void *tls;
+    void *tls_region;
     int errno;
     seL4_IPCBuffer *ipc_buffer;
     seL4_CPtr ipc_buffer_page;

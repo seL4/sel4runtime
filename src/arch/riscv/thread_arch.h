@@ -29,12 +29,13 @@
 thread_t *__sel4runtime_tls_self() {
 #ifdef __clang__
     char *tp;
-    __asm__ __volatile__ ("or %0, t1, x0" : "=r" (tp) );
+    __asm__ __volatile__ ("or %0, tp, x0" : "=r" (tp) );
 #else
-    register char *tp __asm__("t1");
+    register char *tp __asm__("tp");
 #endif
     return (thread_t*) (tp - sizeof(thread_t));
 }
 
 #define TLS_ABOVE_TP
+#define GAP_ABOVE_TP 0
 #define TP_ADJ(p) ((char *)(p) + sizeof(thread_t))

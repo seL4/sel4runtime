@@ -32,4 +32,5 @@ static inline thread_t *__sel4runtime_tls_self() {
     return self;
 }
 
+#define GAP_ABOVE_TP 0
 #define TP_ADJ(p) (p)

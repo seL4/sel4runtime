@@ -39,4 +39,5 @@ ret
 
 # Argument Passing
 
-Arguments are passed on the stack in `%ebp+4+(4 * n)`
+Arguments are passed on the stack in `%ebp+4+(4 * n)` (between the
+return address and the return frame pointer).

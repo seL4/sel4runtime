@@ -113,6 +113,6 @@ add_dependencies(sel4runtime Configuration sel4runtime_crt)
 # of `stdint.h` which is correct for the given platform and `muslc`
 # currently provides this most conveniently.
 
-# TODO: Remove muslc dependency
-target_link_libraries(sel4runtime Configuration sel4 elf)
+# TODO: Remove elf & arith dependency
+target_link_libraries(sel4runtime Configuration sel4 elf utils)
 

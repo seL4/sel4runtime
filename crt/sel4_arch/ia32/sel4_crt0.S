@@ -15,7 +15,10 @@
 .global _sel4_start
 _sel4_start:
 	leal __thread_top, %esp
-	jmp __sel4_start_root
+	mov  %esp, %ebp
+	push %ebp
+	push %ebx
+	call __sel4_start_root
 
 .section .bss
 __thread_base:

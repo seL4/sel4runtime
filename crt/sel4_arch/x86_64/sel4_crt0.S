@@ -15,6 +15,7 @@
 .global _sel4_start
 _sel4_start:
 	leaq __thread_top, %rsp
+	movq %rdi, %rdx
 	jmp __sel4_start_root
 
 .section .bss

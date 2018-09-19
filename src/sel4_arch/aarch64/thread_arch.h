@@ -29,8 +29,9 @@
 static inline thread_t *__sel4runtime_tls_self() {
     char *self;
     __asm__ __volatile__ ("mrs %0,tpidr_el0" : "=r"(self));
-    return (void*)(self + 16 - sizeof(thread_t));
+    return (void*)(self - sizeof(thread_t));
 }
 
 #define TLS_ABOVE_TP
-#define TP_ADJ(p) ((char *)(p) + sizeof(thread_t) - 16)
+#define GAP_ABOVE_TP 16
+#define TP_ADJ(p) ((char *)(p) + sizeof(thread_t))

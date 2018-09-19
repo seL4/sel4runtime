@@ -33,7 +33,7 @@ static inline thread_t *__sel4runtime_tls_self()
 {
     char *p;
     __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
-    return (void *)(p+8-sizeof(thread_t));
+    return (void *)(p - sizeof(thread_t));
 }
 
 #else
@@ -49,10 +49,11 @@ static inline thread_t *__sel4runtime_tls_self()
     extern uintptr_t __attribute__((__visibility__("hidden"))) __a_gettp_ptr;
     register uintptr_t p __asm__("r0");
     __asm__ __volatile__ ( BLX " %1" : "=r"(p) : "r"(__a_gettp_ptr) : "cc", "lr" );
-    return (void *)(p+8-sizeof(thread_t));
+    return (void *)(p - sizeof(thread_t));
 }
 
 #endif
 
 #define TLS_ABOVE_TP
-#define TP_ADJ(p) ((char *)(p) + sizeof(thread_t) - 8)
+#define GAP_ABOVE_TP 8
+#define TP_ADJ(p) ((char *)(p) + sizeof(thread_t))
