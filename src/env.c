@@ -12,8 +12,9 @@ static thread_t __initial_thread;
 static struct {
     char const *process_name;
 
-    // cspace descriptors
-    sel4runtime_cspace_t cspace;
+    // optional bootinfo pointer.
+    seL4_BootInfo *bootinfo;
+
 
     /*
      * The initial thread object is initially set to a static thread
@@ -51,8 +52,8 @@ char const *sel4runtime_process_name(void) {
     return env.process_name;
 }
 
-const sel4runtime_cspace_t *sel4runtime_cspace_descriptor(void) {
-    return &env.cspace;
+const seL4_BootInfo *sel4runtime_bootinfo(void) {
+    return env.bootinfo;
 }
 
 thread_t *__sel4runtime_thread_self(void) {
@@ -107,9 +108,8 @@ static void parse_auxv(auxv_t const auxv[]) {
             break;
         }
         case AT_SEL4_BOOT_INFO: {
-            env.cspace.tag = SEL4RUNTIME_CSPACE_BOOTINFO;
             seL4_BootInfo *bootinfo = auxv[i].a_un.a_ptr;
-            env.cspace.cspace.bootinfo = bootinfo;
+            env.bootinfo = bootinfo;
             env.initial_thread->ipc_buffer = bootinfo->ipcBuffer;
             env.initial_thread->tcb = seL4_CapInitThreadTCB;
             env.initial_thread->cnode = seL4_CapInitThreadCNode;
