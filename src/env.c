@@ -18,6 +18,7 @@
 #include "auxv.h"
 #include "start.h"
 #include "thread.h"
+#include "init.h"
 
 
 static thread_t __attribute__((aligned (16))) __initial_thread;
@@ -209,6 +210,19 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     return TP_ADJ(thread);
 }
 
+void sel4runtime_exit(int code) {
+    __sel4runtime_run_destructors();
+
+    /* Suspend the process */
+    seL4_CPtr tcb = __sel4runtime_thread_self()->tcb;
+    while (tcb != seL4_CapNull) {
+        seL4_TCB_Suspend(tcb);
+    }
+    while (1) {
+        seL4_Yield();
+    }
+}
+
 thread_t *__sel4runtime_thread_self(void) {
     if (!sel4runtime_initial_tls_enabled()) {
         return env.initial_thread;
@@ -222,6 +236,7 @@ void __sel4runtime_load_env(
     char const * const *envp,
     auxv_t const auxv[]
 ) {
+    __sel4runtime_run_constructors();
     parse_auxv(auxv);
     name_process(arg0);
     try_init_static_tls();

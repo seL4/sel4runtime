@@ -96,6 +96,7 @@ add_library(
 	src/start.c
 	src/start_root.c
 	src/env.c
+	src/init.c
 )
 target_include_directories(
 	sel4runtime

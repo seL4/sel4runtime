@@ -121,3 +121,8 @@ void *sel4runtime_write_tls_image_extended(
  *          seL4_TCB_SetTLSBase.
  */
 void *sel4runtime_move_initial_tls(void *tls_memory);
+
+/*
+ * Exit the runtime.
+ */
+void sel4runtime_exit(int code);

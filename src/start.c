@@ -10,6 +10,7 @@
  * @TAG(DATA61_BSD)
  */
 #include <sel4/sel4.h>
+#include <sel4runtime.h>
 #include "start.h"
 
 void __sel4runtime_start_main(
@@ -21,8 +22,5 @@ void __sel4runtime_start_main(
 ) {
     __sel4runtime_load_env(argv[0], envp, auxv);
 
-    main(argc, argv, envp);
-    while (1) {
-        seL4_Yield();
-    }
+    sel4runtime_exit(main(argc, argv, envp));
 }
