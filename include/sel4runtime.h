@@ -29,12 +29,12 @@ char const *sel4runtime_process_name(void);
 /*
  * Get the IPC buffer for the current thread.
  */
-seL4_IPCBuffer *sel4runtime_ipc_buffer(void);
+seL4_IPCBuffer *sel4runtime_thread_ipc_buffer_vaddr(void);
 
 /*
  * Get the CPtr for the page of the IPC buffer for the current thread.
  */
-seL4_CPtr sel4runtime_thread_ipc_buffer(void);
+seL4_CPtr sel4runtime_thread_ipc_buffer_cap(void);
 
 /*
  * Get the CPtr for the TCB of the current thread.

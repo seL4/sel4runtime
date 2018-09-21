@@ -94,14 +94,14 @@ const seL4_BootInfo *sel4runtime_bootinfo(void) {
     return env.bootinfo;
 }
 
-seL4_IPCBuffer *sel4runtime_ipc_buffer() {
+seL4_IPCBuffer *sel4runtime_thread_ipc_buffer_vaddr() {
     return __sel4runtime_thread_self()->ipc_buffer;
 }
 seL4_IPCBuffer *seL4_GetIPCBuffer(void) {
     return __sel4runtime_thread_self()->ipc_buffer;
 }
 
-seL4_CPtr sel4runtime_thread_ipc_buffer() {
+seL4_CPtr sel4runtime_thread_ipc_buffer_cap() {
     return __sel4runtime_thread_self()->ipc_buffer_page;
 }
 
