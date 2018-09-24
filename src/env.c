@@ -20,6 +20,8 @@
 #include "init.h"
 #include "util.h"
 
+// Global vsyscall handler.
+size_t __sysinfo;
 
 static thread_t __attribute__((aligned (16))) __initial_thread;
 
@@ -277,6 +279,10 @@ static void parse_auxv(auxv_t const auxv[]) {
         }
         case AT_PHDR: {
             parse_phdr(auxv[i].a_un.a_ptr);
+            break;
+        }
+        case AT_SYSINFO: {
+            __sysinfo = (size_t)(auxv[i].a_un.a_ptr);
             break;
         }
         case AT_SEL4_BOOT_INFO: {

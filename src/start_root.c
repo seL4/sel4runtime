@@ -30,6 +30,8 @@ extern unsigned int _tdata_start[];
 extern unsigned int _tdata_end[];
 extern unsigned int _tbss_end[];
 
+long sel4_vsyscall(long sysnum, ...);
+
 /*
  * The entrypoint into a root task is somewhat different to the
  * entrypoint into a regular process. The kernel does not provide a
@@ -66,6 +68,9 @@ void __sel4_start_root(seL4_BootInfo *boot_info) {
         }, {
             .a_type = AT_PHDR,
             .a_un.a_ptr = &tls_header,
+        }, {
+            .a_type = AT_SYSINFO,
+            .a_un.a_ptr = &sel4_vsyscall,
         }, {
             .a_type = AT_SEL4_BOOT_INFO,
             .a_un.a_ptr = boot_info,
