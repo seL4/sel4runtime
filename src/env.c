@@ -300,6 +300,36 @@ static void parse_auxv(auxv_t const auxv[]) {
             thread->asid_pool = seL4_CapInitThreadASIDPool;
             break;
         }
+        case AT_SEL4_IPC_BUFFER_PTR: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->ipc_buffer = auxv[i].a_un.a_ptr;
+            break;
+        }
+        case AT_SEL4_IPC_BUFFER: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->ipc_buffer_page = auxv[i].a_un.a_val;
+            break;
+        }
+        case AT_SEL4_TCB: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->tcb = auxv[i].a_un.a_val;
+            break;
+        }
+        case AT_SEL4_CNODE: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->cnode = auxv[i].a_un.a_val;
+            break;
+        }
+        case AT_SEL4_VSPACE: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->vspace = auxv[i].a_un.a_val;
+            break;
+        }
+        case AT_SEL4_ASID_POOL: {
+            thread_t *thread = __sel4runtime_thread_self();
+            thread->asid_pool = auxv[i].a_un.a_val;
+            break;
+        }
         default:
             break;
         }
