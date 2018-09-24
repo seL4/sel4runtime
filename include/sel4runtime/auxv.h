@@ -9,7 +9,6 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include "elf_helper.h"
 
 // seL4-specific auxiliary vector values.
 #define AT_SEL4_BOOT_INFO         64

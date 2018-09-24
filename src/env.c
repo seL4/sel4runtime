@@ -11,10 +11,12 @@
  */
 #include <string.h>
 #include <sel4runtime.h>
+#include <sel4runtime/auxv.h>
 #include <sel4/sel4.h>
 #include <thread_arch.h>
 
-#include "auxv.h"
+#include <mode/elf_helper.h>
+
 #include "start.h"
 #include "thread.h"
 #include "init.h"

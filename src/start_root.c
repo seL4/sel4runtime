@@ -10,9 +10,11 @@
  * @TAG(DATA61_BSD)
  */
 #include <sel4/sel4.h>
+#include <sel4runtime/auxv.h>
 #include <stdint.h>
 
-#include "auxv.h"
+#include <mode/elf_helper.h>
+
 #include "start.h"
 
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
