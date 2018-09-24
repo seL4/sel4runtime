@@ -109,11 +109,7 @@ target_include_directories(
 )
 add_dependencies(sel4runtime Configuration sel4runtime_crt)
 
-# Currently, elf is required to interpret elf program headers for
-# regions such as the TLS. The elf definitions require an implementation
-# of `stdint.h` which is correct for the given platform and `muslc`
-# currently provides this most conveniently.
-
-# TODO: Remove elf & arith dependency
-target_link_libraries(sel4runtime Configuration sel4 elf utils)
+# A C library is still needed here to provide memcpy, stdint.h, and
+# elf.h
+target_link_libraries(sel4runtime Configuration sel4 muslc)
 

@@ -13,12 +13,12 @@
 #include <sel4runtime.h>
 #include <sel4/sel4.h>
 #include <thread_arch.h>
-#include <utils/arith.h>
 
 #include "auxv.h"
 #include "start.h"
 #include "thread.h"
 #include "init.h"
+#include "util.h"
 
 
 static thread_t __attribute__((aligned (16))) __initial_thread;
