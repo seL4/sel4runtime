@@ -22,6 +22,9 @@
 #include "init.h"
 #include "util.h"
 
+// Minimum alignment across all platforms.
+#define MIN_REGION_ALIGN 16
+
 // Global vsyscall handler.
 size_t __sysinfo;
 
@@ -90,6 +93,8 @@ static void load_tls_data(Elf_Phdr *header);
 static void try_init_static_tls(void);
 static thread_t *thread_from_tls_region(void *tls_region);
 static char *tls_from_tls_region(void *tls_region);
+static const size_t tls_region_size(size_t mem_size, size_t align);
+static void empty_tls(void);
 
 char const *sel4runtime_process_name(void) {
     return env.process_name;
@@ -241,6 +246,7 @@ void __sel4runtime_load_env(
     auxv_t const auxv[]
 ) {
     __sel4runtime_run_constructors();
+    empty_tls();
     parse_auxv(auxv);
     name_process(arg0);
     try_init_static_tls();
@@ -348,14 +354,17 @@ static void parse_phdr(Elf_Phdr* header) {
 
 static void load_tls_data(Elf_Phdr *header) {
     env.tls.image = (void *) header->p_vaddr;
-    env.tls.align = header->p_align;
+    if (header->p_align >= MIN_REGION_ALIGN) {
+        env.tls.align = header->p_align;
+    } else {
+        env.tls.align = MIN_REGION_ALIGN;
+    }
     env.tls.image_size = header->p_filesz;
     env.tls.memory_size = header->p_memsz;
-    env.tls.region_size
-        = ROUND_UP(sizeof (thread_t), env.tls.align)
-        + (2 * sizeof (void *))
-        + GAP_ABOVE_TP
-        + ROUND_UP(header->p_memsz, env.tls.align);
+    env.tls.region_size = tls_region_size(
+        env.tls.memory_size,
+        env.tls.align
+    );
 }
 
 static void try_init_static_tls(void) {
@@ -396,4 +405,22 @@ static char *tls_from_tls_region(void *tls_region) {
         - env.tls.memory_size;
 #endif
     return (char *)tls;
+}
+
+static const size_t tls_region_size(size_t mem_size, size_t align) {
+    return ROUND_UP(sizeof (thread_t), align)
+        + (2 * sizeof (void *))
+        + GAP_ABOVE_TP
+        + ROUND_UP(mem_size, align);
+}
+
+static void empty_tls(void) {
+    env.tls.image = NULL;
+    env.tls.align = MIN_REGION_ALIGN;
+    env.tls.image_size = 0;
+    env.tls.memory_size = 0;
+    env.tls.region_size = tls_region_size(
+        env.tls.memory_size,
+        env.tls.align
+    );
 }
