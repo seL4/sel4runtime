@@ -12,9 +12,10 @@
 .section .text
 .global _start
 _start:
-	movl %esp, %ebp
+	mov %esp, %ebp
 
-	push 0(%ebp)
+	push %ebp
+	push %ebp
 	call __sel4_start_c
 
 	/* should not return */
