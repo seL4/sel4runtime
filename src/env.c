@@ -192,15 +192,14 @@ void *sel4runtime_write_tls_image_extended(
 
 void *sel4runtime_move_initial_tls(void *tls_memory) {
     if (
-        sel4runtime_initial_tls_enabled() ||
         tls_memory == NULL ||
-        sel4runtime_thread_tcb() == seL4_CapNull
+        __initial_thread.tcb == seL4_CapNull
     ) {
         return NULL;
     }
 
     thread_t *thread = thread_from_tls_region(tls_memory);
-    *thread = *env.initial_thread;
+    *thread = __initial_thread;
     thread->self = thread;
     thread->tls = tls_from_tls_region(tls_memory);
     thread->tls_region = tls_memory;
@@ -208,7 +207,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     memcpy(thread->tls, env.tls.image, env.tls.image_size);
 
     seL4_Error err = seL4_TCB_SetTLSBase(
-        sel4runtime_thread_tcb(),
+        thread->tcb,
         (uintptr_t)TP_ADJ(thread)
     );
     if (err != seL4_NoError) {

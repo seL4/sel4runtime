@@ -117,6 +117,11 @@ void *sel4runtime_write_tls_image_extended(
  * Particularly useful for enabling TLS in the initial process where the
  * TLS image exeeded the size of the static TLS region in the runtime.
  *
+ * WARNING: This will not prevent re-initialisation of the TLS for the
+ * initial thread (even by other threads). This should only be used at
+ * the start of a process only if `sel4utils_initial_tls_enabled`
+ * returns false.
+ *
  * @returns the pointer to the TLS that should be used to call
  *          seL4_TCB_SetTLSBase.
  */
