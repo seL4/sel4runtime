@@ -408,7 +408,6 @@ static char *tls_from_tls_region(void *tls_region) {
 
 static const size_t tls_region_size(size_t mem_size, size_t align) {
     return ROUND_UP(sizeof (thread_t), align)
-        + (2 * sizeof (void *))
         + GAP_ABOVE_TP
         + ROUND_UP(mem_size, align);
 }
