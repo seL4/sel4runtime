@@ -55,6 +55,7 @@ static struct {
     struct {
         size_t count;
         size_t size;
+        Elf_Phdr *headers;
     } program_header;
 
     // TLS images
@@ -88,7 +89,7 @@ static struct {
 
 static void name_process(char const *name);
 static void parse_auxv(auxv_t const auxv[]);
-static void parse_phdr(Elf_Phdr* header);
+static void parse_phdrs(void);
 static void load_tls_data(Elf_Phdr *header);
 static void try_init_static_tls(void);
 static thread_t *thread_from_tls_region(void *tls_region);
@@ -247,6 +248,7 @@ void __sel4runtime_load_env(
     __sel4runtime_run_constructors();
     empty_tls();
     parse_auxv(auxv);
+    parse_phdrs();
     name_process(arg0);
     try_init_static_tls();
 
@@ -285,7 +287,7 @@ static void parse_auxv(auxv_t const auxv[]) {
             break;
         }
         case AT_PHDR: {
-            parse_phdr(auxv[i].a_un.a_ptr);
+            env.program_header.headers = auxv[i].a_un.a_ptr;
             break;
         }
         case AT_SYSINFO: {
@@ -341,13 +343,16 @@ static void parse_auxv(auxv_t const auxv[]) {
     }
 }
 
-static void parse_phdr(Elf_Phdr* header) {
-    switch (header->p_type) {
-        case PT_TLS:
-            load_tls_data(header);
-            break;
-        default:
-            break;
+static void parse_phdrs(void) {
+    for (size_t h = 0; h < env.program_header.count; h++) {
+        Elf_Phdr *header = &env.program_header.headers[h];
+        switch (header->p_type) {
+            case PT_TLS:
+                load_tls_data(header);
+                break;
+            default:
+                break;
+        }
     }
 }
 
