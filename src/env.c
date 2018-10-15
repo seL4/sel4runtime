@@ -109,7 +109,7 @@ seL4_IPCBuffer *sel4runtime_thread_ipc_buffer_vaddr() {
     return __sel4runtime_thread_self()->ipc_buffer;
 }
 seL4_IPCBuffer *seL4_GetIPCBuffer(void) {
-    return __sel4runtime_thread_self()->ipc_buffer;
+    return __sel4runtime_tls_self()->ipc_buffer;
 }
 
 seL4_CPtr sel4runtime_thread_ipc_buffer_cap() {
@@ -216,6 +216,15 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     }
 
     env.initial_thread = NULL;
+
+    // The thread can only be named after the TLS is initialised.
+#if defined(CONFIG_DEBUG_BUILD)
+    seL4_CPtr tcb = __sel4runtime_thread_self()->tcb;
+    if (tcb != seL4_CapNull) {
+        seL4_DebugNameThread(tcb, env.process_name);
+    }
+#endif
+
     return TP_ADJ(thread);
 }
 
@@ -266,13 +275,6 @@ static void name_process(char const *name) {
 
         name++;
     }
-
-#if defined(CONFIG_DEBUG_BUILD)
-    seL4_CPtr tcb = __sel4runtime_thread_self()->tcb;
-    if (tcb != seL4_CapNull) {
-        seL4_DebugNameThread(tcb, env.process_name);
-    }
-#endif
 }
 
 static void parse_auxv(auxv_t const auxv[]) {
