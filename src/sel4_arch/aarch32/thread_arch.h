@@ -24,9 +24,10 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <sel4/arch/constants.h>
 #include <thread.h>
 
-#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__ || __ARM_ARCH >= 6) && !__thumb__) \
+#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
 static inline thread_t *__sel4runtime_tls_self()
@@ -34,6 +35,14 @@ static inline thread_t *__sel4runtime_tls_self()
     char *p;
     __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
     return (void *)(p - sizeof(thread_t));
+}
+
+#elif __ARM_ARCH >= 6
+
+static inline thread_t *__sel4runtime_tls_self()
+{
+    void **globals_frame = (void **)seL4_GlobalsFrame;
+    return globals_frame[1];
 }
 
 #else
