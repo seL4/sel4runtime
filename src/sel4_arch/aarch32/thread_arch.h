@@ -37,12 +37,12 @@ static inline thread_t *__sel4runtime_tls_self()
     return (void *)(p - sizeof(thread_t));
 }
 
-#elif __ARM_ARCH >= 6
+#elif defined(CONFIG_IPC_BUF_GLOBALS_FRAME)
 
 static inline thread_t *__sel4runtime_tls_self()
 {
     void **globals_frame = (void **)seL4_GlobalsFrame;
-    return globals_frame[1];
+    return (void *)(globals_frame[1] - sizeof(thread_t));
 }
 
 #else
