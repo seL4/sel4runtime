@@ -26,7 +26,7 @@
 
 #include <thread.h>
 
-#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
+#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__ || __ARM_ARCH >= 6) && !__thumb__) \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
 static inline thread_t *__sel4runtime_tls_self()
@@ -38,19 +38,7 @@ static inline thread_t *__sel4runtime_tls_self()
 
 #else
 
-#if __ARM_ARCH_4__ || __ARM_ARCH_4T__ || __ARM_ARCH == 4
-#define BLX "mov lr,pc\n\tbx"
-#else
-#define BLX "blx"
-#endif
-
-static inline thread_t *__sel4runtime_tls_self()
-{
-    extern uintptr_t __attribute__((__visibility__("hidden"))) __a_gettp_ptr;
-    register uintptr_t p __asm__("r0");
-    __asm__ __volatile__ ( BLX " %1" : "=r"(p) : "r"(__a_gettp_ptr) : "cc", "lr" );
-    return (void *)(p - sizeof(thread_t));
-}
+#error "ARM architectures below ARMv6 are unsupported"
 
 #endif
 
