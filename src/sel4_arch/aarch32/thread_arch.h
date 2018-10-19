@@ -39,6 +39,14 @@ static inline thread_t *__sel4runtime_tls_self()
 
 #elif defined(CONFIG_IPC_BUF_GLOBALS_FRAME)
 
+/*
+ * In the case of early versions of ARMv6, there are no hardware
+ * registers provided for thread-local identifiers. seL4 resolves this
+ * by placing the IPC buffer address and thread pointer in a
+ * `GlobalsFrame` mapped at the same address in all virtual address
+ * spaces. The IPC buffer and thread pointer occupy the first two words
+ * in this frame respectively.
+ */
 static inline thread_t *__sel4runtime_tls_self()
 {
     void **globals_frame = (void **)seL4_GlobalsFrame;
