@@ -23,6 +23,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+/*
+ * This has been implemented in assembly to ensure that the following
+ * requirements from section 4.3.5 of the Run-time ABI for ARM
+ * Architecture are met:
+ *
+ * Implementations of this function should corrupt only the result
+ * register (r0) and the non-parameter integer core registers allowed to
+ * be corrupted by the [AAPCS] (ip, lr, and CPSR). Registers r1 -r3 must
+ * be preserved.
+ */
 .syntax unified
 .global __aeabi_read_tp
 .type __aeabi_read_tp,%function
