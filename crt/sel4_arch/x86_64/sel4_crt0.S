@@ -16,7 +16,11 @@
 _sel4_start:
 	leaq __thread_top, %rsp
 	movq %rdi, %rdx
-	jmp __sel4_start_root
+	call __sel4_start_root
+
+	/* should not return */
+1:
+	jmp  1b
 
 .section .bss
 __thread_base:

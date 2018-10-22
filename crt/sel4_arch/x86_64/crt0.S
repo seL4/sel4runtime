@@ -15,6 +15,7 @@ _start:
 	movq %rsp, %rbp
 	movq %rsp, %rdi
 
+	subq $0x8, %rsp
 	push 0(%rbp)
 	call __sel4_start_c
 

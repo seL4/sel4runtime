@@ -20,6 +20,10 @@ _sel4_start:
 	push %ebx
 	call __sel4_start_root
 
+	/* should not return */
+1:
+	jmp  1b
+
 .section .bss
 __thread_base:
 	.align 16
