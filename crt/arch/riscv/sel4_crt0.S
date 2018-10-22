@@ -24,14 +24,14 @@ _sel4_start:
   addi  gp, gp, %pcrel_lo(1b)
 .option pop
 
-	la sp, __thread_base
+	la sp, __stack_top
 	jal __sel4_start_root
 	/* should not return */
 1:
 	j 1b
 
 .section .bss
-__thread_base:
+__stack_base:
 	.align 16
 	.space CONFIG_SEL4RUNTIME_ROOT_STACK
-__thread_top:
+__stack_top:

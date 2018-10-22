@@ -14,7 +14,7 @@
 .section .text
 .global _sel4_start
 _sel4_start:
-	ldr x19, =__thread_base
+	ldr x19, =__stack_top
 	add sp, x19, #0
 	bl __sel4_start_root
 	/* should not return */
@@ -22,7 +22,7 @@ _sel4_start:
 	b 1b
 
 .section .bss
-__thread_base:
+__stack_base:
 	.align 16
 	.space CONFIG_SEL4RUNTIME_ROOT_STACK
-__thread_top:
+__stack_top:

@@ -14,7 +14,7 @@
 .section .text
 .global _sel4_start
 _sel4_start:
-	leaq __thread_top, %rsp
+	leaq __stack_top, %rsp
 	movq %rsp, %rbp
 	/*
 	 * GCC expects that a C function is always entered via a call
@@ -35,7 +35,7 @@ _sel4_start:
 	jmp  1b
 
 .section .bss
-__thread_base:
+__stack_base:
 	.align 16
 	.space CONFIG_SEL4RUNTIME_ROOT_STACK
-__thread_top:
+__stack_top:
