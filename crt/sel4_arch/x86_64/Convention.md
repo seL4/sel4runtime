@@ -20,14 +20,33 @@ Additionally:
 
 * The stack must always be 16-byte aligned, i.e. `%rsp` mod 16 == 0.
 
+In order to ensure tha alignment is maintained at a 16-byte alignment,
+the stack may need to be manually aligned after function entry.
+
+When a function is entered via `call`, the return address is implicitly
+pushed onto the stack, misaligning it by one word (8 bytes). When the
+return stack pointer is then pushed onto the stack in the function
+prologue, the stack is re-aligned.
+
+Further pushes should occur in pairs or should be resolved using a
+`subq` instruction to re-align the stack to 16 bytes.
+
+It is also the responsibility of the caller to ensure that when a
+function is called that the stack remains aligned to 16-bytes up to the
+`call` instruction.
+
 # Prologue
 
 1. push `%rbp` onto the stack,
 2. read the current value of `%rsp` into `%rbp`
+3. Reserve the stack frame and re-align the stack to 16-bytes.
 
 ```asm
 push %rbp
 mov  %rsp, %rbp
+// This will already be aligned to 16 bytes due to the empty stack
+// frame.
+// subq $0x0, %rsp
 ```
 
 # Epilogue

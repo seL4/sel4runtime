@@ -20,14 +20,35 @@ Additionally:
 
 * The stack must always be 16-byte aligned, i.e. `%esp` mod 16 == 0.
 
+In order to ensure tha alignment is maintained at a 16-byte alignment,
+the stack may need to be manually aligned after function entry.
+
+When a function is entered via `call`, the return address is implicitly
+pushed onto the stack, misaligning it by one word (4 bytes). When the
+return stack pointer is then pushed onto the stack in the function
+prologue, the stack then becomes misaligned by two words (8 bytes).
+
+Further pushes should occur in pairs or should be resolved using a
+`sub` instruction to re-align the stack to 16 bytes.
+
+It is also the responsibility of the caller to ensure that when a
+function is called that the stack remains aligned to 16-bytes up to the
+`call` instruction. As the callee removes arguments from the stack upon
+return, the stack may be misaligned when a function is returned from. It
+is the responsibility of the caller to re-align the stack if this
+occurs.
+
 # Prologue
 
 1. push `%ebp` onto the stack,
 2. read the current value of `%esp` into `%ebp`
+3. Reserve the stack frame and re-align the stack to 16-bytes.
 
 ```asm
 push %ebp
 mov  %esp, %ebp
+// re-align to 16-bytes
+sub  $0x8, %esp
 ```
 
 # Epilogue
