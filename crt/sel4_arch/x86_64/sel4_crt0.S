@@ -15,7 +15,7 @@
 .global _sel4_start
 _sel4_start:
 	leaq __thread_top, %rsp
-	movq %rdi, %rdx
+	movq %rsp, %rbp
 	/*
 	 * GCC expects that a C function is always entered via a call
 	 * instruction and that the stack is 16-byte aligned before such an
@@ -27,7 +27,7 @@ _sel4_start:
 	 * __sel4_start_c.
 	 */
 	subq $0x8, %rsp
-	push 0(%rbp)
+	push %rbp
 	call __sel4_start_root
 
 	/* should not return */

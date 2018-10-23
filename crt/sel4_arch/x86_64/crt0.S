@@ -26,7 +26,7 @@ _start:
 	 * __sel4_start_c.
 	 */
 	subq $0x8, %rsp
-	push 0(%rbp)
+	push %rbp
 	call __sel4_start_c
 
 	/* should not return */
