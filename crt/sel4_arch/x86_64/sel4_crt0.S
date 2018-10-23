@@ -16,6 +16,18 @@
 _sel4_start:
 	leaq __thread_top, %rsp
 	movq %rdi, %rdx
+	/*
+	 * GCC expects that a C function is always entered via a call
+	 * instruction and that the stack is 16-byte aligned before such an
+	 * instruction (leaving it 16-byte aligned + 1 word from the
+	 * implicit push when the function is entered).
+	 *
+	 * If additional items are pushed onto the stack, the stack must be
+	 * manually re-aligned before the call instruction to
+	 * __sel4_start_c.
+	 */
+	subq $0x8, %rsp
+	push 0(%rbp)
 	call __sel4_start_root
 
 	/* should not return */

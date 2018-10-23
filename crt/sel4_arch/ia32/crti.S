@@ -14,9 +14,15 @@
 _init:
 	pushl %ebp
 	movl  %esp, %ebp
+	// Align the stack to 16-bytes after return address pushed by call
+	// and the ebp pushed above.
+	sub  $0x8, %esp
 
 .section .fini
 .global _fini
 _fini:
 	pushl %ebp
 	movl  %esp, %ebp
+	// Align the stack to 16-bytes after return address pushed by call
+	// and the ebp pushed above.
+	sub  $0x8, %esp
