@@ -9,6 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <assert.h>
 #include <string.h>
 #include <sel4runtime.h>
 #include <sel4runtime/auxv.h>
@@ -96,6 +97,8 @@ static thread_t *thread_from_tls_region(void *tls_region);
 static char *tls_from_tls_region(void *tls_region);
 static const size_t tls_region_size(size_t mem_size, size_t align);
 static void empty_tls(void);
+static void set_libsel4_ipc_buffer(thread_t *thread);
+static void *switch_tls(seL4_Word tcb, void *new_tp);
 
 char const *sel4runtime_process_name(void) {
     return env.process_name;
@@ -182,12 +185,15 @@ void *sel4runtime_write_tls_image_extended(
     thread->tls_region = tls_memory;
     thread->errno = 0;
     thread->ipc_buffer = ipc_buffer;
+    thread->ipc_buffer_page = ipc_buffer_page;
     thread->tcb = tcb;
     thread->cnode = cnode;
     thread->vspace = vspace;
     thread->asid_pool = asid_pool;
 
     memcpy(thread->tls, env.tls.image, env.tls.image_size);
+
+    set_libsel4_ipc_buffer(thread);
 
     return TP_ADJ(thread);
 }
@@ -431,4 +437,30 @@ static void empty_tls(void) {
         env.tls.memory_size,
         env.tls.align
     );
+}
+
+/*
+ * Set the ipc_buffer address for the thread as managed by libsel4.
+ */
+static void set_libsel4_ipc_buffer(thread_t *thread) {
+    seL4_Word current_tcb = __sel4runtime_thread_self()->tcb;
+    assert(current_tcb != seL4_CapNull);
+    void *old_tp = switch_tls(current_tcb, TP_ADJ(thread));
+    assert(old_tp != NULL);
+    sel4runtime_sync_ipc_buffer_vaddr();
+    switch_tls(current_tcb, old_tp);
+}
+
+/*
+ * Swap the TLS region currently in use.
+ *
+ * @returns the old thread pointer.
+ */
+static void *switch_tls(seL4_Word tcb, void *new_tp) {
+    thread_t *old_thread = __sel4runtime_thread_self();
+    assert(old_thread != NULL);
+    assert(tcb != seL4_CapNull);
+
+    seL4_TCB_SetTLSBase(tcb, (uintptr_t)new_tp);
+    return TP_ADJ(old_thread);
 }
