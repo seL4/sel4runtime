@@ -108,8 +108,9 @@ const seL4_BootInfo *sel4runtime_bootinfo(void) {
 seL4_IPCBuffer *sel4runtime_thread_ipc_buffer_vaddr() {
     return __sel4runtime_thread_self()->ipc_buffer;
 }
-seL4_IPCBuffer *seL4_GetIPCBuffer(void) {
-    return __sel4runtime_tls_self()->ipc_buffer;
+
+void sel4runtime_sync_ipc_buffer_vaddr(void) {
+    seL4_SetIPCBuffer(sel4runtime_thread_ipc_buffer_vaddr());
 }
 
 seL4_CPtr sel4runtime_thread_ipc_buffer_cap() {
@@ -214,6 +215,8 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     if (err != seL4_NoError) {
         return NULL;
     }
+
+    seL4_SetIPCBuffer(thread->ipc_buffer);
 
     env.initial_thread = NULL;
 
