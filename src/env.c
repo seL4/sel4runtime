@@ -94,6 +94,7 @@ static void parse_auxv(auxv_t const auxv[]);
 static void parse_phdrs(void);
 static void load_tls_data(Elf_Phdr *header);
 static void try_init_static_tls(void);
+static void copy_tls_data(thread_t *thread);
 static thread_t *thread_from_tls_region(void *tls_region);
 static char *tls_from_tls_region(void *tls_region);
 static const size_t tls_region_size(size_t mem_size, size_t align);
@@ -183,7 +184,7 @@ void *sel4runtime_write_tls_image_extended(
     thread->vspace = vspace;
     thread->asid_pool = asid_pool;
 
-    memcpy(thread->tls, env.tls.image, env.tls.image_size);
+    copy_tls_data(thread);
 
     set_libsel4_ipc_buffer(thread, ipc_buffer);
 
@@ -204,7 +205,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     thread->tls = tls_from_tls_region(tls_memory);
     thread->tls_region = tls_memory;
 
-    memcpy(thread->tls, env.tls.image, env.tls.image_size);
+    copy_tls_data(thread);
 
     seL4_Error err = seL4_TCB_SetTLSBase(
         thread->tcb,
@@ -380,6 +381,12 @@ static void try_init_static_tls(void) {
     ) {
         sel4runtime_move_initial_tls(static_tls);
     }
+}
+
+static void copy_tls_data(thread_t *thread) {
+    memcpy(thread->tls, env.tls.image, env.tls.image_size);
+    char *tbss = &((char *)thread->tls)[env.tls.image_size];
+    memset(tbss, 0, env.tls.memory_size - env.tls.image_size);
 }
 
 static thread_t *thread_from_tls_region(void *tls_region) {
