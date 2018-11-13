@@ -41,3 +41,17 @@ This entry-point moves onto a static 16 kilobyte stack before invoking
 auxiliary vectors. It then passes the constructed vectors, along with
 `main`, into `__sel4_start_main` which configures the runtime before
 starting `main`.
+
+# Thread-local storage layout
+
+There are two standard layouts for thread local storage commonly used.
+One where the TLS base address refers to the first address in memory of
+the region and one where it refers to the address that immediately
+follows the region. Intel's x86_64 and ia32 architectures use the latter
+method as it aligns with the segmentation view of memory presented by
+the processor. Most other platforms use former method, where the TLS can
+be said to be 'above' the thread pointer.
+
+In order to store metadata for the current thread in the same memory
+allocation as the TLS, the run-time utilises memory on the other side of
+the thread pointer for it's thread structure.

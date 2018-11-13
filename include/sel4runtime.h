@@ -50,7 +50,11 @@ seL4_CPtr sel4runtime_thread_vspace(void);
  * Get the CPtr of the ASID pool of the current thread.
  */
 seL4_CPtr sel4runtime_thread_asid_pool(void);
-seL4_IPCBuffer *seL4_GetIPCBuffer(void);
+
+/*
+ * Get the address of the TLS base register.
+ */
+void *sel4runtime_tls_base_addr(void);
 
 /*
  * Get the bootinfo pointer if the process was provided a bootinfo
@@ -62,6 +66,12 @@ const seL4_BootInfo *sel4runtime_bootinfo(void);
  * Get the size in bytes needed to store the thread's TLS.
  */
 size_t sel4runtime_get_tls_size(void);
+
+/*
+ * Get the offset used to calculate the thread pointer from the
+ * starting address of the thread area.
+ */
+size_t sel4runtime_get_tp_offset(void);
 
 /*
  * Check if the TLS for the initial thread is enabled.

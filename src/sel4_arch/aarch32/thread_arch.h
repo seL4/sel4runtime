@@ -1,40 +1,28 @@
 /*
- * @TAG(OTHER_MIT)
- */
-/*
- * Copyright © 2005-2014 Rich Felker, et al.
+ * Copyright 2018, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
  *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * @TAG(DATA61_BSD)
  */
 
 #include <sel4/arch/constants.h>
-#include <thread.h>
+#include <stdint.h>
 
 #if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
-static inline thread_t *__sel4runtime_tls_self()
-{
-    char *p;
-    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
-    return (void *)(p - sizeof(thread_t));
+/*
+ * Obtain the value of the TLS base for the current thread.
+ */
+static inline uintptr_t __sel4runtime_thread_pointer() {
+    uintptr_t tp;
+    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(tp) );
+    return tp;
 }
 
 #elif defined(CONFIG_IPC_BUF_GLOBALS_FRAME)
@@ -47,10 +35,9 @@ static inline thread_t *__sel4runtime_tls_self()
  * spaces. The IPC buffer and thread pointer occupy the first two words
  * in this frame respectively.
  */
-static inline thread_t *__sel4runtime_tls_self()
-{
+static inline uintptr_t __sel4runtime_thread_pointer() {
     void **globals_frame = (void **)seL4_GlobalsFrame;
-    return (void *)(globals_frame[1] - sizeof(thread_t));
+    return (uintptr_t)globals_frame[1];
 }
 
 #else
@@ -61,4 +48,3 @@ static inline thread_t *__sel4runtime_tls_self()
 
 #define TLS_ABOVE_TP
 #define GAP_ABOVE_TP 8
-#define TP_ADJ(p) ((char *)(p) + sizeof(thread_t))

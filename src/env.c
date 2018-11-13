@@ -14,7 +14,6 @@
 #include <sel4runtime.h>
 #include <sel4runtime/auxv.h>
 #include <sel4/sel4.h>
-#include <thread_arch.h>
 
 #include <mode/elf_helper.h>
 
@@ -24,6 +23,7 @@
 #include "util.h"
 
 // Minimum alignment across all platforms.
+#define WORD_ALIGN (sizeof(seL4_Word))
 #define MIN_REGION_ALIGN 16
 
 // Global vsyscall handler.
@@ -97,6 +97,7 @@ static void try_init_static_tls(void);
 static void copy_tls_data(thread_t *thread);
 static thread_t *thread_from_tls_region(void *tls_region);
 static char *tls_from_tls_region(void *tls_region);
+static void *tls_base_addr(thread_t *thread);
 static const size_t tls_region_size(size_t mem_size, size_t align);
 static void empty_tls(void);
 static void set_libsel4_ipc_buffer(thread_t *thread, void *ipc_buffer);
@@ -130,8 +131,16 @@ seL4_CPtr sel4runtime_thread_asid_pool() {
     return __sel4runtime_thread_self()->asid_pool;
 }
 
+void *sel4runtime_tls_base_addr(void) {
+    return tls_base_addr(__sel4runtime_thread_self());
+}
+
 size_t sel4runtime_get_tls_size(void) {
     return env.tls.region_size;
+}
+
+size_t sel4runtime_get_tp_offset(void) {
+    return (size_t) tls_base_addr(thread_from_tls_region((void *) 0x0));
 }
 
 int sel4runtime_initial_tls_enabled(void) {
@@ -188,7 +197,7 @@ void *sel4runtime_write_tls_image_extended(
 
     set_libsel4_ipc_buffer(thread, ipc_buffer);
 
-    return TP_ADJ(thread);
+    return tls_base_addr(thread);
 }
 
 void *sel4runtime_move_initial_tls(void *tls_memory) {
@@ -209,7 +218,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
 
     seL4_Error err = seL4_TCB_SetTLSBase(
         thread->tcb,
-        (uintptr_t)TP_ADJ(thread)
+        (uintptr_t)tls_base_addr(thread)
     );
     if (err != seL4_NoError) {
         return NULL;
@@ -227,7 +236,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     }
 #endif
 
-    return TP_ADJ(thread);
+    return tls_base_addr(thread);
 }
 
 void sel4runtime_exit(int code) {
@@ -247,7 +256,11 @@ thread_t *__sel4runtime_thread_self(void) {
     if (!sel4runtime_initial_tls_enabled()) {
         return env.initial_thread;
     } else {
-        return __sel4runtime_tls_self();
+        uintptr_t thread = __sel4runtime_thread_pointer();
+#if defined(TLS_ABOVE_TP)
+        thread -= ROUND_UP(sizeof(thread_t), env.tls.align);
+#endif
+        return (thread_t *)thread;
     }
 }
 
@@ -390,39 +403,40 @@ static void copy_tls_data(thread_t *thread) {
 }
 
 static thread_t *thread_from_tls_region(void *tls_region) {
-#if defined(TLS_ABOVE_TP)
-    uintptr_t thread
-        = (uintptr_t)tls_region
-        + ROUND_UP(sizeof(thread_t), env.tls.align)
-        - sizeof(thread_t);
-#else
-    uintptr_t thread
-        = (uintptr_t)tls_region
-        + env.tls.region_size
-        - ROUND_UP(sizeof(thread_t), env.tls.align);
+    uintptr_t tls_addr = ROUND_UP((uintptr_t)tls_region, env.tls.align);
+#if !defined(TLS_ABOVE_TP)
+    tls_addr += ROUND_UP(env.tls.memory_size, env.tls.align);
 #endif
-    return (thread_t *)thread;
+    return (thread_t *)tls_addr;
 }
 
 static char *tls_from_tls_region(void *tls_region) {
+    uintptr_t tls_addr = (uintptr_t)thread_from_tls_region(tls_region);
 #if defined(TLS_ABOVE_TP)
-    uintptr_t tls
-        = (uintptr_t)tls_region
-        + ROUND_UP(sizeof(thread_t), env.tls.align)
-        + GAP_ABOVE_TP;
-#else
-    uintptr_t tls
-        = (uintptr_t)tls_region
-        + env.tls.region_size
-        - ROUND_UP(sizeof(thread_t), env.tls.align)
-        - env.tls.memory_size;
+    tls_addr += ROUND_UP(sizeof(thread_t), env.tls.align);
+#if defined(GAP_ABOVE_TP)
+    tls_addr +=  GAP_ABOVE_TP;
 #endif
-    return (char *)tls;
+#else
+    tls_addr -= ROUND_UP(env.tls.memory_size, WORD_ALIGN * 2);
+#endif
+    return (char *)tls_addr;
+}
+
+static void *tls_base_addr(thread_t *thread) {
+    uintptr_t tls_base = (uintptr_t)thread;
+#if defined(TLS_ABOVE_TP)
+    tls_base += ROUND_UP(sizeof(thread_t), env.tls.align);
+#endif
+    return (void *)tls_base;
 }
 
 static const size_t tls_region_size(size_t mem_size, size_t align) {
-    return ROUND_UP(sizeof (thread_t), align)
+    return align
+        + ROUND_UP(sizeof (thread_t), align)
+#if defined(GAP_ABOVE_TP)
         + GAP_ABOVE_TP
+#endif
         + ROUND_UP(mem_size, align);
 }
 
@@ -443,7 +457,7 @@ static void empty_tls(void) {
 static void set_libsel4_ipc_buffer(thread_t *thread, void *ipc_buffer) {
     seL4_Word current_tcb = __sel4runtime_thread_self()->tcb;
     assert(current_tcb != seL4_CapNull);
-    void *old_tp = switch_tls(current_tcb, TP_ADJ(thread));
+    void *old_tp = switch_tls(current_tcb, tls_base_addr(thread));
     assert(old_tp != NULL);
     seL4_SetIPCBuffer(ipc_buffer);
     switch_tls(current_tcb, old_tp);
@@ -460,5 +474,5 @@ static void *switch_tls(seL4_Word tcb, void *new_tp) {
     assert(tcb != seL4_CapNull);
 
     seL4_TCB_SetTLSBase(tcb, (uintptr_t)new_tp);
-    return TP_ADJ(old_thread);
+    return tls_base_addr(old_thread);
 }

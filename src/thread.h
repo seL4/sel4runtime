@@ -14,6 +14,7 @@
  */
 
 #include <sel4/sel4.h>
+#include <thread_arch.h>
 
 #pragma once
 

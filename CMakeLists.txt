@@ -62,13 +62,13 @@ add_custom_command(
 		"$<TARGET_OBJECTS:sel4runtime_crt_obj>"
 		${CMAKE_BINARY_DIR}/lib/
 	COMMAND ${CMAKE_COMMAND} -E env mv
-		${CMAKE_BINARY_DIR}/lib/crt0.S.obj
+		${CMAKE_BINARY_DIR}/lib/crt0.S${CMAKE_C_OUTPUT_EXTENSION}
 		${CMAKE_BINARY_DIR}/lib/crt0.o
 	COMMAND ${CMAKE_COMMAND} -E env mv
-		${CMAKE_BINARY_DIR}/lib/crti.S.obj
+		${CMAKE_BINARY_DIR}/lib/crti.S${CMAKE_C_OUTPUT_EXTENSION}
 		${CMAKE_BINARY_DIR}/lib/crti.o
 	COMMAND ${CMAKE_COMMAND} -E env mv
-		${CMAKE_BINARY_DIR}/lib/crtn.S.obj
+		${CMAKE_BINARY_DIR}/lib/crtn.S${CMAKE_C_OUTPUT_EXTENSION}
 		${CMAKE_BINARY_DIR}/lib/crtn.o
 	COMMAND_EXPAND_LISTS
 )
