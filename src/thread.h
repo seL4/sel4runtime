@@ -23,7 +23,6 @@ typedef struct {
     void *tls;
     void *tls_region;
     int errno;
-    seL4_IPCBuffer *ipc_buffer;
     seL4_CPtr ipc_buffer_page;
     seL4_CPtr tcb;
     seL4_CPtr cnode;

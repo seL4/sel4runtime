@@ -27,17 +27,6 @@
 char const *sel4runtime_process_name(void);
 
 /*
- * Get the IPC buffer for the current thread.
- */
-seL4_IPCBuffer *sel4runtime_thread_ipc_buffer_vaddr(void);
-
-/*
- * Set the value of the thread's IPC buffer as known by libsel4 to be
- * the same as the value known to sel4runtime.
- */
-void sel4runtime_sync_ipc_buffer_vaddr(void);
-
-/*
  * Get the CPtr for the page of the IPC buffer for the current thread.
  */
 seL4_CPtr sel4runtime_thread_ipc_buffer_cap(void);
