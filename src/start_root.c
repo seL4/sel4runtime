@@ -57,7 +57,7 @@ void __sel4_start_root(seL4_BootInfo *boot_info) {
         .p_paddr  = 0,
         .p_filesz = tdata_end - tdata_start,
         .p_memsz  = tbss_end - tdata_start,
-        .p_align = 16,
+        .p_align = sizeof(seL4_Word),
     };
 
     auxv_t auxv[] = {

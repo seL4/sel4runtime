@@ -23,16 +23,16 @@
 #include "util.h"
 
 // Minimum alignment across all platforms.
-#define WORD_ALIGN (sizeof(seL4_Word))
-#define MIN_REGION_ALIGN 16
+#define WORD_SIZE (sizeof(seL4_Word))
+#define WORD_ALIGNED __attribute__((aligned (WORD_SIZE)))
 
 // Global vsyscall handler.
 size_t __sysinfo;
 
-static thread_t __attribute__((aligned (16))) __initial_thread;
+static thread_t WORD_ALIGNED __initial_thread;
 
 // Static TLS for initial thread.
-char __attribute__((aligned (16))) static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS];
+char WORD_ALIGNED static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS];
 
 // The seL4 runtime environment.
 static struct {
@@ -374,10 +374,10 @@ static void parse_phdrs(void) {
 
 static void load_tls_data(Elf_Phdr *header) {
     env.tls.image = (void *) header->p_vaddr;
-    if (header->p_align >= MIN_REGION_ALIGN) {
+    if (header->p_align >= WORD_SIZE) {
         env.tls.align = header->p_align;
     } else {
-        env.tls.align = MIN_REGION_ALIGN;
+        env.tls.align = WORD_SIZE;
     }
     env.tls.image_size = header->p_filesz;
     env.tls.memory_size = header->p_memsz;
@@ -418,7 +418,7 @@ static char *tls_from_tls_region(void *tls_region) {
     tls_addr +=  GAP_ABOVE_TP;
 #endif
 #else
-    tls_addr -= ROUND_UP(env.tls.memory_size, WORD_ALIGN * 2);
+    tls_addr -= ROUND_UP(env.tls.memory_size, env.tls.align);
 #endif
     return (char *)tls_addr;
 }
@@ -442,7 +442,7 @@ static const size_t tls_region_size(size_t mem_size, size_t align) {
 
 static void empty_tls(void) {
     env.tls.image = NULL;
-    env.tls.align = MIN_REGION_ALIGN;
+    env.tls.align = WORD_SIZE;
     env.tls.image_size = 0;
     env.tls.memory_size = 0;
     env.tls.region_size = tls_region_size(
