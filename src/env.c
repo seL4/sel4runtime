@@ -397,9 +397,9 @@ static void try_init_static_tls(void) {
 }
 
 static void copy_tls_data(thread_t *thread) {
-    memcpy(thread->tls, env.tls.image, env.tls.image_size);
+    __sel4runtime_memcpy(thread->tls, env.tls.image, env.tls.image_size);
     char *tbss = &((char *)thread->tls)[env.tls.image_size];
-    memset(tbss, 0, env.tls.memory_size - env.tls.image_size);
+    __sel4runtime_memset(tbss, 0, env.tls.memory_size - env.tls.image_size);
 }
 
 static thread_t *thread_from_tls_region(void *tls_region) {

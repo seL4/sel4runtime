@@ -97,6 +97,8 @@ add_library(
 	src/start_root.c
 	src/env.c
 	src/init.c
+	src/memset.c
+	src/memcpy.c
 )
 target_include_directories(
 	sel4runtime
