@@ -10,6 +10,7 @@
  * @TAG(DATA61_BSD)
  */
 #include <assert.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sel4runtime.h>
 #include <sel4runtime/auxv.h>
@@ -51,6 +52,7 @@ static struct {
      * then set to NULL and the thread local reference should be used.
      */
     thread_t *initial_thread;
+    bool initial_thread_tls_enabled = false;
     seL4_CPtr initial_thread_tcb;
     seL4_IPCBuffer *initial_thread_ipc_buffer;
 
@@ -103,6 +105,7 @@ static const size_t tls_region_size(size_t mem_size, size_t align);
 static void empty_tls(void);
 static void set_libsel4_ipc_buffer(thread_t *thread, void *ipc_buffer);
 static void *switch_tls(seL4_Word tcb, void *new_tp);
+static bool is_initial_thread(void);
 
 char const *sel4runtime_process_name(void) {
     return env.process_name;
@@ -130,7 +133,7 @@ int sel4runtime_initial_tls_enabled(void) {
      * object in the TLS will be used rather than the static thread
      * object.
      */
-    return env.initial_thread == NULL;
+    return env.initial_thread_tls_enabled;
 }
 
 void *sel4runtime_write_tls_image(void *tls_memory) {
@@ -158,7 +161,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     }
 
     thread_t *thread = thread_from_tls_region(tls_memory);
-    *thread = __initial_thread;
+    *thread = *env.initial_thread;
     thread->self = thread;
     thread->tls = tls_from_tls_region(tls_memory);
     thread->tls_region = tls_memory;
@@ -175,7 +178,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
 
     seL4_SetIPCBuffer(env.initial_thread_ipc_buffer);
 
-    env.initial_thread = NULL;
+    env.initial_thread_tls_enabled = true;
 
     // The thread can only be named after the TLS is initialised.
 #if defined(CONFIG_DEBUG_BUILD)
@@ -186,14 +189,17 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
 }
 
 void sel4runtime_exit(int code) {
+    if (!is_initial_thread()) {
+        seL4_TCB_Suspend(env.initial_thread_tcb);
+    }
+
     __sel4runtime_run_destructors();
 
     /* Suspend the process */
-    seL4_CPtr tcb = __sel4runtime_thread_self()->tcb;
-    while (tcb != seL4_CapNull) {
-        seL4_TCB_Suspend(tcb);
-    }
-    while (1) {
+    while (true) {
+        if (is_initial_thread()) {
+            seL4_TCB_Suspend(env.initial_thread_tcb);
+        }
         seL4_Yield();
     }
 }
@@ -396,4 +402,12 @@ static void *switch_tls(seL4_Word tcb, void *new_tp) {
 
     seL4_TCB_SetTLSBase(tcb, (uintptr_t)new_tp);
     return tls_base_addr(old_thread);
+}
+
+/*
+ * Check if the executing thread is the inital thread of the process.
+ */
+static bool is_initial_thread(void) {
+    void *thread_tls = __sel4runtime_thread_self()->tls;
+    return thread_tls == env.initial_thread->tls;
 }

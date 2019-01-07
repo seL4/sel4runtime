@@ -85,5 +85,10 @@ void *sel4runtime_move_initial_tls(void *tls_memory);
 
 /*
  * Exit the runtime.
+ *
+ * This will attempt to suspend the initial thread of the process. Any
+ * threading libraries should register a destructor to trigger any
+ * threads they create to be suspended. They should neve suspend the
+ * current thread.
  */
 void sel4runtime_exit(int code);
