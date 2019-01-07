@@ -52,7 +52,7 @@ static struct {
      * then set to NULL and the thread local reference should be used.
      */
     thread_t *initial_thread;
-    bool initial_thread_tls_enabled = false;
+    bool initial_thread_tls_enabled;
     seL4_CPtr initial_thread_tcb;
     seL4_IPCBuffer *initial_thread_ipc_buffer;
 
@@ -90,6 +90,7 @@ static struct {
      * object.
      */
     .initial_thread = &__initial_thread,
+    .initial_thread_tls_enabled = false,
 };
 
 static void name_process(char const *name);
@@ -103,9 +104,8 @@ static char *tls_from_tls_region(void *tls_region);
 static void *tls_base_addr(thread_t *thread);
 static const size_t tls_region_size(size_t mem_size, size_t align);
 static void empty_tls(void);
-static void set_libsel4_ipc_buffer(thread_t *thread, void *ipc_buffer);
-static void *switch_tls(seL4_Word tcb, void *new_tp);
 static bool is_initial_thread(void);
+static thread_t *thread_from_base(void *tls_base);
 
 char const *sel4runtime_process_name(void) {
     return env.process_name;
@@ -176,7 +176,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
         return NULL;
     }
 
-    seL4_SetIPCBuffer(env.initial_thread_ipc_buffer);
+    __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
 
     env.initial_thread_tls_enabled = true;
 
@@ -204,15 +204,35 @@ void sel4runtime_exit(int code) {
     }
 }
 
+int sel4runtime_write_tls_variable(
+    void *dest_tls_base,
+    void *local_tls_dest,
+    void *src,
+    size_t bytes
+) {
+    thread_t *local_thread = __sel4runtime_thread_self();
+    size_t offset = (uintptr_t)local_tls_dest - (uintptr_t)local_thread->tls_region;
+    size_t tls_size = sel4runtime_get_tls_size();
+
+    // Write must not go past end of TLS.
+    if (offset > tls_size || offset + bytes > tls_size) {
+        return -1;
+    }
+
+    thread_t *dest_thread = thread_from_base(dest_tls_base);
+    uintptr_t dest_addr = (uintptr_t)dest_thread->tls_region + offset;
+
+    __sel4runtime_memcpy((void *)dest_addr, src, bytes);
+
+    return 0;
+}
+
 thread_t *__sel4runtime_thread_self(void) {
     if (!sel4runtime_initial_tls_enabled()) {
         return env.initial_thread;
     } else {
-        uintptr_t thread = __sel4runtime_thread_pointer();
-#if defined(TLS_ABOVE_TP)
-        thread -= ROUND_UP(sizeof(thread_t), env.tls.align);
-#endif
-        return (thread_t *)thread;
+        void *tls_base = (void *)__sel4runtime_thread_pointer();
+        return thread_from_base(tls_base);
     }
 }
 
@@ -379,35 +399,20 @@ static void empty_tls(void) {
 }
 
 /*
- * Set the ipc_buffer address for the thread as managed by libsel4.
- */
-static void set_libsel4_ipc_buffer(thread_t *thread, void *ipc_buffer) {
-    seL4_Word current_tcb = __sel4runtime_thread_self()->tcb;
-    assert(current_tcb != seL4_CapNull);
-    void *old_tp = switch_tls(current_tcb, tls_base_addr(thread));
-    assert(old_tp != NULL);
-    seL4_SetIPCBuffer(ipc_buffer);
-    switch_tls(current_tcb, old_tp);
-}
-
-/*
- * Swap the TLS region currently in use.
- *
- * @returns the old thread pointer.
- */
-static void *switch_tls(seL4_Word tcb, void *new_tp) {
-    thread_t *old_thread = __sel4runtime_thread_self();
-    assert(old_thread != NULL);
-    assert(tcb != seL4_CapNull);
-
-    seL4_TCB_SetTLSBase(tcb, (uintptr_t)new_tp);
-    return tls_base_addr(old_thread);
-}
-
-/*
  * Check if the executing thread is the inital thread of the process.
  */
 static bool is_initial_thread(void) {
     void *thread_tls = __sel4runtime_thread_self()->tls;
     return thread_tls == env.initial_thread->tls;
+}
+
+/*
+ * Get the hread object from the TLS base of a thread.
+ */
+static thread_t *thread_from_base(void *tls_base) {
+    uintptr_t thread = (uintptr_t)tls_base;
+#if defined(TLS_ABOVE_TP)
+    thread -= ROUND_UP(sizeof(thread_t), env.tls.align);
+#endif
+    return (thread_t *)thread;
 }

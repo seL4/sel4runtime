@@ -84,6 +84,33 @@ void *sel4runtime_write_tls_image(void *tls_memory);
 void *sel4runtime_move_initial_tls(void *tls_memory);
 
 /*
+ * Writes into a thread_local variable of another thread.
+ */
+#define sel4runtime_set_tls_variable(thread_pointer, variable, value) ({\
+    _Static_assert(\
+        sizeof(variable) == sizeof(value), \
+        "Set value of same size" \
+    ); \
+    (typeof (variable)) (1 ? (variable) : (value)); \
+    sel4runtime_write_tls_variable( \
+        thread_pointer, \
+        &(variable), \
+        &(value), \
+        sizeof(value) \
+    ); \
+})
+
+/*
+ * Copies data into the equivalent address in the TLS of another thread.
+ */
+int sel4runtime_write_tls_variable(
+    void *dest_tls_base,
+    void *local_tls_dest,
+    void *src,
+    size_t bytes
+);
+
+/*
  * Exit the runtime.
  *
  * This will attempt to suspend the initial thread of the process. Any
