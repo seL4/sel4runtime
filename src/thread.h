@@ -24,11 +24,6 @@ typedef struct {
     void *tls;
     void *tls_region;
     int errno;
-    seL4_CPtr ipc_buffer_page;
-    seL4_CPtr tcb;
-    seL4_CPtr cnode;
-    seL4_CPtr vspace;
-    seL4_CPtr asid_pool;
 } thread_t;
 
 /*

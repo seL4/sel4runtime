@@ -51,6 +51,7 @@ static struct {
      * then set to NULL and the thread local reference should be used.
      */
     thread_t *initial_thread;
+    seL4_CPtr initial_thread_tcb;
     seL4_IPCBuffer *initial_thread_ipc_buffer;
 
     // ELF Headers
@@ -111,26 +112,6 @@ const seL4_BootInfo *sel4runtime_bootinfo(void) {
     return env.bootinfo;
 }
 
-seL4_CPtr sel4runtime_thread_ipc_buffer_cap() {
-    return __sel4runtime_thread_self()->ipc_buffer_page;
-}
-
-seL4_CPtr sel4runtime_thread_tcb() {
-    return __sel4runtime_thread_self()->tcb;
-}
-
-seL4_CPtr sel4runtime_thread_cnode() {
-    return __sel4runtime_thread_self()->cnode;
-}
-
-seL4_CPtr sel4runtime_thread_vspace() {
-    return __sel4runtime_thread_self()->vspace;
-}
-
-seL4_CPtr sel4runtime_thread_asid_pool() {
-    return __sel4runtime_thread_self()->asid_pool;
-}
-
 void *sel4runtime_tls_base_addr(void) {
     return tls_base_addr(__sel4runtime_thread_self());
 }
@@ -152,32 +133,7 @@ int sel4runtime_initial_tls_enabled(void) {
     return env.initial_thread == NULL;
 }
 
-void *sel4runtime_write_tls_image(
-    void *tls_memory,
-    seL4_CPtr tcb,
-    seL4_IPCBuffer *ipc_buffer,
-    seL4_CPtr ipc_buffer_page
-) {
-    return sel4runtime_write_tls_image_extended(
-        tls_memory,
-        tcb,
-        ipc_buffer,
-        ipc_buffer_page,
-        sel4runtime_thread_cnode(),
-        sel4runtime_thread_vspace(),
-        sel4runtime_thread_asid_pool()
-    );
-}
-
-void *sel4runtime_write_tls_image_extended(
-    void *tls_memory,
-    seL4_CPtr tcb,
-    seL4_IPCBuffer *ipc_buffer,
-    seL4_CPtr ipc_buffer_page,
-    seL4_CPtr cnode,
-    seL4_CPtr vspace,
-    seL4_CPtr asid_pool
-) {
+void *sel4runtime_write_tls_image(void *tls_memory) {
     if (!sel4runtime_initial_tls_enabled() || tls_memory == NULL) {
         return NULL;
     }
@@ -187,15 +143,8 @@ void *sel4runtime_write_tls_image_extended(
     thread->tls = tls_from_tls_region(tls_memory);
     thread->tls_region = tls_memory;
     thread->errno = 0;
-    thread->ipc_buffer_page = ipc_buffer_page;
-    thread->tcb = tcb;
-    thread->cnode = cnode;
-    thread->vspace = vspace;
-    thread->asid_pool = asid_pool;
 
     copy_tls_data(thread);
-
-    set_libsel4_ipc_buffer(thread, ipc_buffer);
 
     return tls_base_addr(thread);
 }
@@ -203,7 +152,7 @@ void *sel4runtime_write_tls_image_extended(
 void *sel4runtime_move_initial_tls(void *tls_memory) {
     if (
         tls_memory == NULL ||
-        __initial_thread.tcb == seL4_CapNull
+        env.initial_thread_tcb == seL4_CapNull
     ) {
         return NULL;
     }
@@ -217,7 +166,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
     copy_tls_data(thread);
 
     seL4_Error err = seL4_TCB_SetTLSBase(
-        thread->tcb,
+        env.initial_thread_tcb,
         (uintptr_t)tls_base_addr(thread)
     );
     if (err != seL4_NoError) {
@@ -230,10 +179,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
 
     // The thread can only be named after the TLS is initialised.
 #if defined(CONFIG_DEBUG_BUILD)
-    seL4_CPtr tcb = __sel4runtime_thread_self()->tcb;
-    if (tcb != seL4_CapNull) {
-        seL4_DebugNameThread(tcb, env.process_name);
-    }
+    seL4_DebugNameThread(env.initial_thread_tcb, env.process_name);
 #endif
 
     return tls_base_addr(thread);
@@ -317,40 +263,15 @@ static void parse_auxv(auxv_t const auxv[]) {
             env.bootinfo = bootinfo;
             thread_t *thread = __sel4runtime_thread_self();
             env.initial_thread_ipc_buffer = bootinfo->ipcBuffer;
-            thread->ipc_buffer_page = seL4_CapInitThreadIPCBuffer;
-            thread->tcb = seL4_CapInitThreadTCB;
-            thread->cnode = seL4_CapInitThreadCNode;
-            thread->vspace = seL4_CapInitThreadVSpace;
-            thread->asid_pool = seL4_CapInitThreadASIDPool;
+            env.initial_thread_tcb = seL4_CapInitThreadTCB;
             break;
         }
         case AT_SEL4_IPC_BUFFER_PTR: {
             env.initial_thread_ipc_buffer = auxv[i].a_un.a_ptr;
             break;
         }
-        case AT_SEL4_IPC_BUFFER: {
-            thread_t *thread = __sel4runtime_thread_self();
-            thread->ipc_buffer_page = auxv[i].a_un.a_val;
-            break;
-        }
         case AT_SEL4_TCB: {
-            thread_t *thread = __sel4runtime_thread_self();
-            thread->tcb = auxv[i].a_un.a_val;
-            break;
-        }
-        case AT_SEL4_CNODE: {
-            thread_t *thread = __sel4runtime_thread_self();
-            thread->cnode = auxv[i].a_un.a_val;
-            break;
-        }
-        case AT_SEL4_VSPACE: {
-            thread_t *thread = __sel4runtime_thread_self();
-            thread->vspace = auxv[i].a_un.a_val;
-            break;
-        }
-        case AT_SEL4_ASID_POOL: {
-            thread_t *thread = __sel4runtime_thread_self();
-            thread->asid_pool = auxv[i].a_un.a_val;
+            env.initial_thread_tcb = auxv[i].a_un.a_val;
             break;
         }
         default:
@@ -389,7 +310,7 @@ static void load_tls_data(Elf_Phdr *header) {
 
 static void try_init_static_tls(void) {
     if (
-        sel4runtime_thread_tcb() != seL4_CapNull &&
+        env.initial_thread_tcb != seL4_CapNull &&
         env.tls.region_size <= sizeof(static_tls)
     ) {
         sel4runtime_move_initial_tls(static_tls);

@@ -27,31 +27,6 @@
 char const *sel4runtime_process_name(void);
 
 /*
- * Get the CPtr for the page of the IPC buffer for the current thread.
- */
-seL4_CPtr sel4runtime_thread_ipc_buffer_cap(void);
-
-/*
- * Get the CPtr for the TCB of the current thread.
- */
-seL4_CPtr sel4runtime_thread_tcb(void);
-
-/*
- * Get the CPtr for the CNode of the current thread.
- */
-seL4_CPtr sel4runtime_thread_cnode(void);
-
-/*
- * Get the CPtr of the VSpace of the current thread.
- */
-seL4_CPtr sel4runtime_thread_vspace(void);
-
-/*
- * Get the CPtr of the ASID pool of the current thread.
- */
-seL4_CPtr sel4runtime_thread_asid_pool(void);
-
-/*
  * Get the address of the TLS base register.
  */
 void *sel4runtime_tls_base_addr(void);
@@ -87,34 +62,10 @@ int sel4runtime_initial_tls_enabled(void);
  * Write the TLS image for a new thread into the provided memory image.
  * The TLS for the initial thread must be enabled before this is called.
  *
- * Copies the cnode, vspace, and asid_pool from the calling thread.
- *
  * @returns the pointer to the TLS that should be used to call
  *          seL4_TCB_SetTLSBase or NULL on error.
  */
-void *sel4runtime_write_tls_image(
-    void *tls_memory,
-    seL4_CPtr tcb,
-    seL4_IPCBuffer *ipc_buffer,
-    seL4_CPtr ipc_buffer_page
-);
-
-/*
- * Write the TLS image for a new thread into the provided memory image.
- * The TLS for the initial thread must be enabled before this is called.
- *
- * @returns the pointer to the TLS that should be used to call
- *          seL4_TCB_SetTLSBase or NULL on error.
- */
-void *sel4runtime_write_tls_image_extended(
-    void *tls_memory,
-    seL4_CPtr tcb,
-    seL4_IPCBuffer *ipc_buffer,
-    seL4_CPtr ipc_buffer_page,
-    seL4_CPtr cnode,
-    seL4_CPtr vspace,
-    seL4_CPtr asid_pool
-);
+void *sel4runtime_write_tls_image(void *tls_memory);
 
 /*
  * Move the TLS for the current thread into a new memory location.
