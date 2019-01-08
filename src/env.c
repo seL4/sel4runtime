@@ -176,7 +176,7 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
         return NULL;
     }
 
-    __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
+    sel4runtime_init_ipc_buffer_addr();
 
     env.initial_thread_tls_enabled = true;
 
@@ -186,6 +186,12 @@ void *sel4runtime_move_initial_tls(void *tls_memory) {
 #endif
 
     return tls_base_addr(thread);
+}
+
+void sel4runtime_init_ipc_buffer_addr(void) {
+    if (env.initial_thread_ipc_buffer != seL4_CapNull) {
+        __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
+    }
 }
 
 void sel4runtime_exit(int code) {

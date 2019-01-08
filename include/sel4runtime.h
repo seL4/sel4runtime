@@ -84,6 +84,18 @@ void *sel4runtime_write_tls_image(void *tls_memory);
 void *sel4runtime_move_initial_tls(void *tls_memory);
 
 /*
+ * Re-initialises the IPC buffer in libsel4 value for the initial thread.
+ *
+ * In the case where the initial thread is not able to modify itself,
+ * this should be called to initialise the IPC buffer address in libsel4
+ * before making system calls.
+ *
+ * In cases where the runtime was unable to initialise TLS for the
+ * inital thread, this should be called after the TLS is initialised.
+ */
+void sel4runtime_init_ipc_buffer_addr(void);
+
+/*
  * Writes into a thread_local variable of another thread.
  */
 #define sel4runtime_set_tls_variable(thread_pointer, variable, value) ({\
