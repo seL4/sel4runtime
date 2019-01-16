@@ -210,7 +210,7 @@ void sel4runtime_exit(int code) {
     }
 }
 
-int sel4runtime_write_tls_variable(
+int __sel4runtime_write_tls_variable(
     void *dest_tls_base,
     void *local_tls_dest,
     void *src,

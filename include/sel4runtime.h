@@ -103,19 +103,19 @@ void sel4runtime_init_ipc_buffer_addr(void);
         sizeof(variable) == sizeof(value), \
         "Set value of same size" \
     ); \
-    (typeof (variable)) (1 ? (variable) : (value)); \
-    sel4runtime_write_tls_variable( \
+    typeof (variable) typed_value = value; \
+    __sel4runtime_write_tls_variable( \
         thread_pointer, \
         &(variable), \
-        &(value), \
-        sizeof(value) \
+        &(typed_value), \
+        sizeof(typed_value) \
     ); \
 })
 
 /*
  * Copies data into the equivalent address in the TLS of another thread.
  */
-int sel4runtime_write_tls_variable(
+int __sel4runtime_write_tls_variable(
     void *dest_tls_base,
     void *local_tls_dest,
     void *src,
