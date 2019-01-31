@@ -17,16 +17,3 @@
 #include <thread_arch.h>
 
 #pragma once
-
-// seL4 threads.
-typedef struct {
-    void *self;
-    void *tls;
-    void *tls_region;
-    int errno;
-} thread_t;
-
-/*
- * Obtain a reference to the current thread.
- */
-thread_t *__sel4runtime_thread_self(void);
