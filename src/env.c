@@ -45,7 +45,6 @@ static struct {
     // optional bootinfo pointer.
     seL4_BootInfo *bootinfo;
 
-
     /*
      * The initial thread object is initially set to a static thread
      * object. It is only used until a TLS is set up for the first
