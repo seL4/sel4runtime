@@ -123,6 +123,15 @@ size_t sel4runtime_get_tls_size(void) {
     return env.tls.region_size;
 }
 
+int sel4runtime_initial_tls_enabled(void) {
+    /*
+     * If the TLS for the initial process has been activated, the thread
+     * object in the TLS will be used rather than the static thread
+     * object.
+     */
+    return env.initial_thread_tls_base != (uintptr_t)NULL;
+}
+
 uintptr_t sel4runtime_write_tls_image(void *tls_memory) {
     if (tls_memory == NULL) {
         return (uintptr_t)NULL;
@@ -141,20 +150,21 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
         return (uintptr_t)NULL;
     }
 
-    env.initial_thread_tls_base = sel4runtime_write_tls_image(tls_memory);
-    if (env.initial_thread_tls_base == (uintptr_t)NULL) {
+    uintptr_t tls_base = sel4runtime_write_tls_image(tls_memory);
+    if (tls_base == (uintptr_t)NULL) {
         return (uintptr_t)NULL;
     }
 
     seL4_Error err = seL4_TCB_SetTLSBase(
         env.initial_thread_tcb,
-        env.initial_thread_tls_base
+        tls_base
     );
     if (err != seL4_NoError) {
         return (uintptr_t)NULL;
     }
 
     __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
+    env.initial_thread_tls_base = tls_base;
 
     // The thread can only be named after the TLS is initialised.
 #if defined(CONFIG_DEBUG_BUILD)
