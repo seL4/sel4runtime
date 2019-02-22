@@ -163,13 +163,15 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
         return (uintptr_t)NULL;
     }
 
-    __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
-    env.initial_thread_tls_base = tls_base;
+    if (env.initial_thread_ipc_buffer != NULL) {
+        __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
+        env.initial_thread_tls_base = tls_base;
 
-    // The thread can only be named after the TLS is initialised.
 #if defined(CONFIG_DEBUG_BUILD)
-    seL4_DebugNameThread(env.initial_thread_tcb, env.process_name);
+        // The thread can only be named after the TLS is initialised.
+        seL4_DebugNameThread(env.initial_thread_tcb, env.process_name);
 #endif
+    }
 
     return env.initial_thread_tls_base;
 }
