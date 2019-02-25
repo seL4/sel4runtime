@@ -11,9 +11,9 @@
  */
 #include <autoconf.h>
 #include <sel4/sel4.h>
-#include <thread_arch.h>
+#include <sel4runtime/thread_arch.h>
 
 __attribute__((__visibility__("hidden")))
 void *__aeabi_read_tp_c(void) {
-    return (void *)__sel4runtime_thread_pointer();
+    return (void *)sel4runtime_get_tls_base();
 }

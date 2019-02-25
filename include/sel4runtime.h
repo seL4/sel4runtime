@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <sel4/sel4.h>
+#include <sel4runtime/thread.h>
 
 #pragma once
 
@@ -30,7 +31,12 @@ char const *sel4runtime_process_name(void);
 /*
  * Get the address of the TLS base register.
  */
-uintptr_t sel4runtime_tls_base_addr(void);
+static inline uintptr_t sel4runtime_get_tls_base(void);
+
+/*
+ * Set the address of the TLS base register.
+ */
+static inline void sel4runtime_set_tls_base(uintptr_t tls_base);
 
 /*
  * Get the bootinfo pointer if the process was provided a bootinfo

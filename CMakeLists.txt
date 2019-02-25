@@ -109,6 +109,9 @@ target_include_directories(
 		src/sel4_arch/${KernelSel4Arch}
 	PUBLIC
 		include
+		include/mode/${KernelWordSize}
+		include/arch/${KernelArch}
+		include/sel4_arch/${KernelSel4Arch}
 )
 add_dependencies(sel4runtime Configuration sel4runtime_crt)
 

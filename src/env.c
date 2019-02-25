@@ -19,7 +19,6 @@
 #include <mode/elf_helper.h>
 
 #include "start.h"
-#include "thread.h"
 #include "init.h"
 #include "util.h"
 
@@ -115,10 +114,6 @@ const seL4_BootInfo *sel4runtime_bootinfo(void) {
     return env.bootinfo;
 }
 
-uintptr_t sel4runtime_tls_base_addr(void) {
-    return __sel4runtime_thread_pointer();
-}
-
 size_t sel4runtime_get_tls_size(void) {
     return env.tls.region_size;
 }
@@ -143,10 +138,7 @@ uintptr_t sel4runtime_write_tls_image(void *tls_memory) {
 }
 
 uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
-    if (
-        tls_memory == NULL ||
-        env.initial_thread_tcb == seL4_CapNull
-    ) {
+    if (tls_memory == NULL) {
         return (uintptr_t)NULL;
     }
 
@@ -155,13 +147,7 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
         return (uintptr_t)NULL;
     }
 
-    seL4_Error err = seL4_TCB_SetTLSBase(
-        env.initial_thread_tcb,
-        tls_base
-    );
-    if (err != seL4_NoError) {
-        return (uintptr_t)NULL;
-    }
+    sel4runtime_set_tls_base(tls_base);
 
     if (env.initial_thread_ipc_buffer != NULL) {
         __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
@@ -198,7 +184,7 @@ int __sel4runtime_write_tls_variable(
     unsigned char *src,
     size_t bytes
 ) {
-    uintptr_t local_tls_base = __sel4runtime_thread_pointer();
+    uintptr_t local_tls_base = sel4runtime_get_tls_base();
     unsigned char *local_tls = tls_from_tls_base(local_tls_base);
     size_t offset = local_tls_dest - local_tls;
     size_t tls_size = env.tls.memory_size;
@@ -395,5 +381,5 @@ static void empty_tls(void) {
  */
 static bool is_initial_thread(void) {
     return env.initial_thread_tls_base == (uintptr_t)NULL
-        || __sel4runtime_thread_pointer() == env.initial_thread_tls_base;
+        || sel4runtime_get_tls_base() == env.initial_thread_tls_base;
 }

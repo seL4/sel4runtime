@@ -9,14 +9,12 @@
  *
  * @TAG(DATA61_BSD)
  */
-
-#include <stdint.h>
-
 /*
- * Obtain the value of the TLS base for the current thread.
+ * seL4 thread representation.
  */
-static inline uintptr_t __sel4runtime_thread_pointer() {
-    uintptr_t tp;
-    __asm__ __volatile__ ("movl %%gs:0,%0" : "=r" (tp) );
-    return tp;
-}
+
+#ifndef _SEL4RUNTIME_THREAD_H
+
+#include <sel4runtime/thread_arch.h>
+
+#endif /* _SEL4RUNTIME_THREAD_H */

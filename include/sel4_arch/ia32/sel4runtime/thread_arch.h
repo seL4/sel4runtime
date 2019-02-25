@@ -15,14 +15,19 @@
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline uintptr_t __sel4runtime_thread_pointer() {
-#ifdef __clang__
+static inline uintptr_t sel4runtime_get_tls_base(void) {
     uintptr_t tp;
-    __asm__ __volatile__ ("or %0, tp, x0" : "=r" (tp) );
-#else
-    register uintptr_t tp __asm__("tp");
-#endif
+    __asm__ __volatile__ ("movl %%gs:0,%0" : "=r" (tp) );
     return tp;
 }
 
-#define TLS_ABOVE_TP
+#ifdef CONFIG_SET_TLS_BASE_SELF
+/*
+ * Set the value of the TLS base for the current thread.
+ */
+static inline void sel4runtime_set_tls_base(uintptr_t tls_base) {
+    seL4_SetTLSBase(tls_base);
+}
+#else
+#error "Set TLS for ia32 not implemented"
+#endif /* CONFIG_SET_TLS_BASE_SELF */
