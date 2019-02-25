@@ -16,16 +16,24 @@
 #if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
  || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
 
-/*
- * Obtain the value of the TLS base for the current thread.
- */
-static inline uintptr_t __sel4runtime_thread_pointer() {
-    uintptr_t tp;
-    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(tp) );
-    return tp;
+static inline uintptr_t __sel4runtime_read_tpidr_el0(void) {
+    uintptr_t reg;
+    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,2" : "=r"(reg) );
+    return reg;
 }
 
-#elif defined(CONFIG_IPC_BUF_GLOBALS_FRAME)
+static inline uintptr_t __sel4runtime_write_tpidr_el0(uintptr_t reg) {
+    __asm__ __volatile__ ( "mcr p15,0,%0,c13,c0,2" : "=r"(reg) );
+    return;
+}
+
+static inline uintptr_t __sel4runtime_read_tpidrro_el0(void) {
+    uintptr_t reg;
+    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(reg) );
+    return reg;
+}
+
+#elif defined(CONFIG_ARCH_ARM_V6)
 
 /*
  * In the case of early versions of ARMv6, there are no hardware
@@ -35,7 +43,12 @@ static inline uintptr_t __sel4runtime_thread_pointer() {
  * spaces. The IPC buffer and thread pointer occupy the first two words
  * in this frame respectively.
  */
-static inline uintptr_t __sel4runtime_thread_pointer() {
+static inline uintptr_t __sel4runtime_read_tpidr_el0(void) {
+    void **globals_frame = (void **)seL4_GlobalsFrame;
+    return (uintptr_t)globals_frame[0];
+}
+
+static inline uintptr_t __sel4runtime_read_tpidrro_el0(void) {
     void **globals_frame = (void **)seL4_GlobalsFrame;
     return (uintptr_t)globals_frame[1];
 }
@@ -45,6 +58,13 @@ static inline uintptr_t __sel4runtime_thread_pointer() {
 #error "ARM architectures below ARMv6 are unsupported"
 
 #endif
+
+/*
+ * Obtain the value of the TLS base for the current thread.
+ */
+static inline uintptr_t __sel4runtime_thread_pointer(void) {
+    return __sel4runtime_read_tpidr_el0();
+}
 
 #define TLS_ABOVE_TP
 #define GAP_ABOVE_TP 8

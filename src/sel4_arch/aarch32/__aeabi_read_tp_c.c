@@ -11,14 +11,9 @@
  */
 #include <autoconf.h>
 #include <sel4/sel4.h>
+#include <thread_arch.h>
 
 __attribute__((__visibility__("hidden")))
 void *__aeabi_read_tp_c(void) {
-#if defined(CONFIG_IPC_BUF_GLOBALS_FRAME)
-    return ((void **)(seL4_GlobalsFrame))[1];
-#else
-    void *p;
-    __asm__ __volatile__ ( "mrc p15,0,%0,c13,c0,3" : "=r"(p) );
-    return p;
-#endif
+    return (void *)__sel4runtime_thread_pointer();
 }
