@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Data61
+ * Copyright 2019, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -9,7 +9,6 @@
  *
  * @TAG(DATA61_BSD)
  */
-
 // seL4-specific auxiliary vector values.
 #define AT_SEL4_BOOT_INFO         64
 #define AT_SEL4_CSPACE_DESCRIPTOR 65
