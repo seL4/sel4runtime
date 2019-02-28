@@ -23,14 +23,14 @@
 #include "util.h"
 
 // Minimum alignment across all platforms.
-#define DOUBLE_WORD (sizeof(seL4_Word) * 2)
-#define DOUBLE_WORD_ALIGNED __attribute__((aligned (DOUBLE_WORD)))
+#define MIN_ALIGN_BYTES 16
+#define MIN_ALIGNED __attribute__((aligned (MIN_ALIGN_BYTES)))
 
 // Global vsyscall handler.
 size_t __sysinfo;
 
 // Static TLS for initial thread.
-char DOUBLE_WORD_ALIGNED static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS];
+char MIN_ALIGNED static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS];
 
 // Thread lookup pointers.
 typedef struct {
@@ -286,13 +286,13 @@ static void parse_phdrs(void) {
 
 static void load_tls_data(Elf_Phdr *header) {
     env.tls.image = (void *) header->p_vaddr;
-    if (header->p_align > DOUBLE_WORD) {
+    if (header->p_align > MIN_ALIGN_BYTES) {
         env.tls.align = header->p_align;
     } else {
-        env.tls.align = DOUBLE_WORD;
+        env.tls.align = MIN_ALIGN_BYTES;
     }
     env.tls.image_size = header->p_filesz;
-    env.tls.memory_size = header->p_memsz;
+    env.tls.memory_size = ROUND_UP(header->p_memsz, header->p_align);
     env.tls.region_size = tls_region_size(
         env.tls.memory_size,
         env.tls.align
@@ -321,11 +321,11 @@ static void copy_tls_data(unsigned char *tls_region) {
 }
 
 static uintptr_t tls_base_from_tls_region(unsigned char *tls_region) {
-    uintptr_t tls_base = ROUND_UP((uintptr_t)tls_region, env.tls.align);
+    uintptr_t tls_base = (uintptr_t)tls_region;
 #if !defined(TLS_ABOVE_TP)
-    tls_base += ROUND_UP(env.tls.memory_size, env.tls.align);
+    tls_base += env.tls.memory_size;
 #endif
-    return tls_base;
+    return ROUND_UP(tls_base, env.tls.align);
 }
 
 static unsigned char *tls_from_tls_base(uintptr_t tls_base) {
@@ -364,7 +364,7 @@ static const size_t tls_region_size(size_t mem_size, size_t align) {
 
 static void empty_tls(void) {
     env.tls.image = NULL;
-    env.tls.align = DOUBLE_WORD;
+    env.tls.align = MIN_ALIGN_BYTES;
     env.tls.image_size = 0;
     env.tls.memory_size = 0;
     env.tls.region_size = tls_region_size(
