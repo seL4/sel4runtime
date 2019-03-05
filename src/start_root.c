@@ -17,8 +17,6 @@
 
 #include "start.h"
 
-#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
-
 /*
  * As this file is only included when we are running a root server,
  * these symbols must exist and be provided for this file to function

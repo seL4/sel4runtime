@@ -9,6 +9,8 @@
  *
  * @TAG(DATA61_BSD)
  */
+#pragma once
+
 // seL4-specific auxiliary vector values.
 #define AT_SEL4_BOOT_INFO         64
 #define AT_SEL4_CSPACE_DESCRIPTOR 65
@@ -19,3 +21,14 @@
 #define AT_SEL4_CNODE             70
 #define AT_SEL4_VSPACE            71
 #define AT_SEL4_ASID_POOL         72
+
+typedef struct {
+    int a_type;
+    union {
+        long a_val;
+        void *a_ptr;
+        void (*a_fnc)(void);
+    } a_un;
+} auxv_t;
+
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))

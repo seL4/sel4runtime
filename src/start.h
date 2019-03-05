@@ -9,21 +9,13 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <sel4runtime/start.h>
 #include <stddef.h>
 
 #pragma once
 
 // Entry into C program.
 int main();
-
-typedef struct {
-    int a_type;
-    union {
-        long a_val;
-        void *a_ptr;
-        void (*a_fnc)(void);
-    } a_un;
-} auxv_t;
 
 /*
  * The this triggers the environment to be set up for the runtime before
