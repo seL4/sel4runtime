@@ -10,10 +10,8 @@
  * @TAG(DATA61_BSD)
  */
 #include <sel4/sel4.h>
-#include <sel4runtime/auxv.h>
+#include <sel4runtime/start.h>
 #include <stdint.h>
-
-#include <sel4runtime/mode/elf.h>
 
 #include "start.h"
 

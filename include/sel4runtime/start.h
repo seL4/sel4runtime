@@ -9,19 +9,23 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include <sel4runtime/start.h>
-#include <stddef.h>
-
 #pragma once
 
+#include <sel4runtime/auxv.h>
+#include <elf.h>
+#include <sel4runtime/mode/elf.h>
+
+// Entry into C program.
+int main();
+
 /*
- * This performs all of the work of loading the execution environment.
- * It mainly operates be loading values out of the environment variables
- * and auxiliary vectors and into variables accessible via interface
- * functions.
+ * The this triggers the environment to be set up for the runtime before
+ * the environment is loaded.
  */
-void __sel4runtime_load_env(
-    char const *arg0,
+void __sel4runtime_start_main(
+    int (*main)(),
+    unsigned long argc,
+    char const * const *argv,
     char const * const *envp,
     auxv_t const auxv[]
 );
