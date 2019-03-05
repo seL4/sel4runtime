@@ -14,9 +14,8 @@
 #include <string.h>
 #include <sel4runtime.h>
 #include <sel4runtime/auxv.h>
+#include <sel4runtime/mode/elf.h>
 #include <sel4/sel4.h>
-
-#include <mode/elf_helper.h>
 
 #include "start.h"
 #include "init.h"

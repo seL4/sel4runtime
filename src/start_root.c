@@ -13,7 +13,7 @@
 #include <sel4runtime/auxv.h>
 #include <stdint.h>
 
-#include <mode/elf_helper.h>
+#include <sel4runtime/mode/elf.h>
 
 #include "start.h"
 
