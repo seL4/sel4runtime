@@ -166,7 +166,7 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
 }
 
 void sel4runtime_exit(int code) {
-    if (!is_initial_thread()) {
+    if (!is_initial_thread() && env.initial_thread_tcb) {
         seL4_TCB_Suspend(env.initial_thread_tcb);
     }
 
@@ -174,7 +174,7 @@ void sel4runtime_exit(int code) {
 
     /* Suspend the process */
     while (true) {
-        if (is_initial_thread()) {
+        if (is_initial_thread() && env.initial_thread_tcb) {
             seL4_TCB_Suspend(env.initial_thread_tcb);
         }
         seL4_Yield();
