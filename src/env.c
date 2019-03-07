@@ -303,10 +303,7 @@ static void load_tls_data(Elf_Phdr *header) {
 }
 
 static void try_init_static_tls(void) {
-    if (
-        env.initial_thread_tcb != seL4_CapNull &&
-        env.tls.region_size <= sizeof(static_tls)
-    ) {
+    if (env.tls.region_size <= sizeof(static_tls)) {
         sel4runtime_move_initial_tls(static_tls);
     }
 }
