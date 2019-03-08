@@ -34,12 +34,15 @@ config_string(Sel4RuntimeStaticTLS SEL4RUNTIME_STATIC_TLS
 )
 add_config_library(sel4runtime "${configure_string}")
 
-file(
-	GLOB crt_files
-		crt/arch/${KernelArch}/*
-		crt/sel4_arch/${KernelSel4Arch}/*
-)
-
+list(APPEND crt_files crt/sel4_arch/${KernelSel4Arch}/crti.S
+                      crt/sel4_arch/${KernelSel4Arch}/crtn.S)
+if ("${KernelArch}" STREQUAL "riscv")
+    list(APPEND crt_files crt/arch/${KernelArch}/crt0.S
+                          crt/arch/${KernelArch}/sel4_crt0.S)
+else()
+    list(APPEND crt_files crt/sel4_arch/${KernelSel4Arch}/crt0.S
+                          crt/sel4_arch/${KernelSel4Arch}/sel4_crt0.S)
+endif()
 add_library(sel4runtime_crt_obj OBJECT ${crt_files})
 target_include_directories(
 	sel4runtime_crt_obj
@@ -80,18 +83,7 @@ add_custom_target(
         "${CMAKE_BINARY_DIR}/lib/crtn.o"
 )
 
-file(
-	GLOB arch_source
-		src/mode/${KernelWordSize}/*
-		src/arch/${KernelArch}/*
-		src/sel4_arch/${KernelSel4Arch}/*
-)
-
-# The sel4runtime library.
-add_library(
-	sel4runtime STATIC
-	${crt_files}
-	${arch_source}
+list(APPEND sources
 	src/crt1.c
 	src/start.c
 	src/start_root.c
@@ -99,6 +91,17 @@ add_library(
 	src/init.c
 	src/memset.c
 	src/memcpy.c
+)
+if (("${KernelSel4Arch}" STREQUAL "aarch32") OR ("${KernelSel4Arch}" STREQUAL "arm_hyp"))
+    list(APPEND sources src/sel4_arch/${KernelSel4Arch}/__aeabi_read_tp.s
+                        src/sel4_arch/${KernelSel4Arch}/__aeabi_read_tp_c.c)
+endif()
+
+# The sel4runtime library.
+add_library(
+	sel4runtime STATIC
+	${crt_files}
+	${sources}
 )
 target_include_directories(
 	sel4runtime
