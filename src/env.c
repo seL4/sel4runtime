@@ -29,7 +29,7 @@
 size_t __sysinfo;
 
 // Static TLS for initial thread.
-char MIN_ALIGNED static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS];
+static char static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS] MIN_ALIGNED = {};
 
 // Thread lookup pointers.
 typedef struct {
