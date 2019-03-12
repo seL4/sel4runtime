@@ -26,7 +26,7 @@
 #define MIN_ALIGNED __attribute__((aligned (MIN_ALIGN_BYTES)))
 
 // Global vsyscall handler.
-size_t __sysinfo;
+size_t __sysinfo = 0;
 
 // Static TLS for initial thread.
 static char static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS] MIN_ALIGNED = {};
