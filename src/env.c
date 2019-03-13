@@ -155,7 +155,7 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
     env.initial_thread_tls_base = tls_base;
 
 #if defined(CONFIG_DEBUG_BUILD)
-    if (env.initial_thread_tcb && env.initial_thread_ipc_buffer) {
+    if (env.initial_thread_tcb && env.initial_thread_ipc_buffer && env.process_name) {
         // The thread can only be named after the TLS is initialised
         // and if an IPC buffer is present.
         seL4_DebugNameThread(env.initial_thread_tcb, env.process_name);
@@ -224,7 +224,7 @@ void __sel4runtime_load_env(
 static void name_process(char const *name) {
     env.process_name = name;
 
-    while (*name != '\0') {
+    while (name && *name != '\0') {
         if (*name == '/') {
             env.process_name = name + 1;
         }
