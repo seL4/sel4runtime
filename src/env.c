@@ -210,12 +210,12 @@ void __sel4runtime_load_env(
     char const * const *envp,
     auxv_t const auxv[]
 ) {
-    __sel4runtime_run_constructors();
     empty_tls();
     parse_auxv(auxv);
     parse_phdrs();
     name_process(arg0);
     try_init_static_tls();
+    __sel4runtime_run_constructors();
 
     env.auxv = auxv;
     env.envp = envp;
