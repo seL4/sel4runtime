@@ -109,7 +109,7 @@ char const *sel4runtime_process_name(void) {
     return env.process_name;
 }
 
-const seL4_BootInfo *sel4runtime_bootinfo(void) {
+seL4_BootInfo *sel4runtime_bootinfo(void) {
     return env.bootinfo;
 }
 

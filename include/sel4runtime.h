@@ -42,7 +42,7 @@ static inline void sel4runtime_set_tls_base(uintptr_t tls_base);
  * Get the bootinfo pointer if the process was provided a bootinfo
  * cspace descriptor.
  */
-const seL4_BootInfo *sel4runtime_bootinfo(void);
+seL4_BootInfo *sel4runtime_bootinfo(void);
 
 /*
  * Get the size in bytes needed to store the thread's TLS.
