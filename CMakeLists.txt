@@ -60,7 +60,7 @@ target_include_directories(
         src/sel4_arch/${KernelSel4Arch}
     PUBLIC include
 )
-target_link_libraries(sel4runtime_crt_obj Configuration)
+target_link_libraries(sel4runtime_crt_obj kernel_autoconf sel4runtime_Config)
 add_custom_command(
     OUTPUT
         "${CMAKE_BINARY_DIR}/lib/crt0.o" "${CMAKE_BINARY_DIR}/lib/crti.o"
@@ -119,8 +119,8 @@ target_include_directories(
         include/arch/${KernelArch}
         include/sel4_arch/${KernelSel4Arch}
 )
-add_dependencies(sel4runtime Configuration sel4runtime_crt)
+add_dependencies(sel4runtime sel4runtime_crt)
 
 # A C library is still needed here to provide memcpy, stdint.h, and
 # elf.h
-target_link_libraries(sel4runtime Configuration sel4 muslc)
+target_link_libraries(sel4runtime sel4 muslc kernel_autoconf sel4runtime_Config)

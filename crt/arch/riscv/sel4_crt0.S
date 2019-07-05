@@ -9,7 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include "autoconf.h"
+#include "sel4runtime/gen_config.h"
 
 .section .text
 .global _sel4_start
