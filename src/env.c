@@ -17,6 +17,7 @@
 #include <sel4runtime/mode/elf.h>
 #include <sel4/sel4.h>
 #include <sel4runtime/gen_config.h>
+#include <autoconf.h>
 
 #include "start.h"
 #include "init.h"

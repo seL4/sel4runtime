@@ -9,6 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <autoconf.h>
 #include <stdint.h>
 
 /*

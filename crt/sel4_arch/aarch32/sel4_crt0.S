@@ -9,7 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include "sel4runtime/gen_config.h"
+#include <sel4runtime/gen_config.h>
 
 .syntax unified
 
