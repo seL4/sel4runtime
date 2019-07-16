@@ -123,4 +123,12 @@ add_dependencies(sel4runtime sel4runtime_crt)
 
 # A C library is still needed here to provide memcpy, stdint.h, and
 # elf.h
-target_link_libraries(sel4runtime PUBLIC sel4 muslc sel4runtime_Config kernel_autoconf)
+target_link_libraries(
+    sel4runtime
+    PUBLIC
+        sel4
+        muslc
+        kernel_autoconf
+    PRIVATE
+        sel4runtime_Config
+)
