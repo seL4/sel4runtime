@@ -60,7 +60,7 @@ target_include_directories(
         src/sel4_arch/${KernelSel4Arch}
     PUBLIC include
 )
-target_link_libraries(sel4runtime_crt_obj kernel_autoconf sel4runtime_Config)
+target_link_libraries(sel4runtime_crt_obj sel4_autoconf sel4runtime_Config)
 add_custom_command(
     OUTPUT
         "${CMAKE_BINARY_DIR}/lib/crt0.o" "${CMAKE_BINARY_DIR}/lib/crti.o"
@@ -128,7 +128,7 @@ target_link_libraries(
     PUBLIC
         sel4
         muslc
-        kernel_autoconf
+        sel4_autoconf
     PRIVATE
         sel4runtime_Config
 )
