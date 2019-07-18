@@ -84,7 +84,7 @@ static struct {
     auxv_t const *auxv;
 
     // Environment vector
-    char const * const *envp;
+    char const *const *envp;
 } env = {
     /*
      * Initialise the initial thread as referring to the global thread
@@ -107,19 +107,23 @@ static const size_t tls_region_size(size_t mem_size, size_t align);
 static void empty_tls(void);
 static bool is_initial_thread(void);
 
-char const *sel4runtime_process_name(void) {
+char const *sel4runtime_process_name(void)
+{
     return env.process_name;
 }
 
-seL4_BootInfo *sel4runtime_bootinfo(void) {
+seL4_BootInfo *sel4runtime_bootinfo(void)
+{
     return env.bootinfo;
 }
 
-size_t sel4runtime_get_tls_size(void) {
+size_t sel4runtime_get_tls_size(void)
+{
     return env.tls.region_size;
 }
 
-int sel4runtime_initial_tls_enabled(void) {
+int sel4runtime_initial_tls_enabled(void)
+{
     /*
      * If the TLS for the initial process has been activated, the thread
      * object in the TLS will be used rather than the static thread
@@ -128,7 +132,8 @@ int sel4runtime_initial_tls_enabled(void) {
     return env.initial_thread_tls_base != (uintptr_t)NULL;
 }
 
-uintptr_t sel4runtime_write_tls_image(void *tls_memory) {
+uintptr_t sel4runtime_write_tls_image(void *tls_memory)
+{
     if (tls_memory == NULL) {
         return (uintptr_t)NULL;
     }
@@ -138,7 +143,8 @@ uintptr_t sel4runtime_write_tls_image(void *tls_memory) {
     return tls_base_from_tls_region(tls_memory);
 }
 
-uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
+uintptr_t sel4runtime_move_initial_tls(void *tls_memory)
+{
     if (tls_memory == NULL) {
         return (uintptr_t)NULL;
     }
@@ -167,7 +173,8 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory) {
     return env.initial_thread_tls_base;
 }
 
-void sel4runtime_exit(int code) {
+void sel4runtime_exit(int code)
+{
     if (!is_initial_thread() && env.initial_thread_tcb) {
         seL4_TCB_Suspend(env.initial_thread_tcb);
     }
@@ -188,7 +195,8 @@ int __sel4runtime_write_tls_variable(
     unsigned char *local_tls_dest,
     unsigned char *src,
     size_t bytes
-) {
+)
+{
     uintptr_t local_tls_base = sel4runtime_get_tls_base();
     unsigned char *local_tls = tls_from_tls_base(local_tls_base);
     size_t offset = local_tls_dest - local_tls;
@@ -209,9 +217,10 @@ int __sel4runtime_write_tls_variable(
 
 void __sel4runtime_load_env(
     char const *arg0,
-    char const * const *envp,
+    char const *const *envp,
     auxv_t const auxv[]
-) {
+)
+{
     empty_tls();
     parse_auxv(auxv);
     parse_phdrs();
@@ -223,7 +232,8 @@ void __sel4runtime_load_env(
     env.envp = envp;
 }
 
-static void name_process(char const *name) {
+static void name_process(char const *name)
+{
     env.process_name = name;
 
     while (name && *name != '\0') {
@@ -235,7 +245,8 @@ static void name_process(char const *name) {
     }
 }
 
-static void parse_auxv(auxv_t const auxv[]) {
+static void parse_auxv(auxv_t const auxv[])
+{
     for (int i = 0; auxv[i].a_type != AT_NULL; i++) {
         switch (auxv[i].a_type) {
         case AT_PHENT: {
@@ -256,7 +267,9 @@ static void parse_auxv(auxv_t const auxv[]) {
         }
         case AT_SEL4_BOOT_INFO: {
             seL4_BootInfo *bootinfo = auxv[i].a_un.a_ptr;
-            if (bootinfo == NULL) break;
+            if (bootinfo == NULL) {
+                break;
+            }
             env.bootinfo = bootinfo;
             env.initial_thread_ipc_buffer = bootinfo->ipcBuffer;
             env.initial_thread_tcb = seL4_CapInitThreadTCB;
@@ -276,20 +289,22 @@ static void parse_auxv(auxv_t const auxv[]) {
     }
 }
 
-static void parse_phdrs(void) {
+static void parse_phdrs(void)
+{
     for (size_t h = 0; h < env.program_header.count; h++) {
         Elf_Phdr *header = &env.program_header.headers[h];
         switch (header->p_type) {
-            case PT_TLS:
-                load_tls_data(header);
-                break;
-            default:
-                break;
+        case PT_TLS:
+            load_tls_data(header);
+            break;
+        default:
+            break;
         }
     }
 }
 
-static void load_tls_data(Elf_Phdr *header) {
+static void load_tls_data(Elf_Phdr *header)
+{
     env.tls.image = (void *) header->p_vaddr;
     if (header->p_align > MIN_ALIGN_BYTES) {
         env.tls.align = header->p_align;
@@ -299,18 +314,20 @@ static void load_tls_data(Elf_Phdr *header) {
     env.tls.image_size = header->p_filesz;
     env.tls.memory_size = ROUND_UP(header->p_memsz, header->p_align);
     env.tls.region_size = tls_region_size(
-        env.tls.memory_size,
-        env.tls.align
-    );
+                              env.tls.memory_size,
+                              env.tls.align
+                          );
 }
 
-static void try_init_static_tls(void) {
+static void try_init_static_tls(void)
+{
     if (env.tls.region_size <= sizeof(static_tls)) {
         sel4runtime_move_initial_tls(static_tls);
     }
 }
 
-static void copy_tls_data(unsigned char *tls_region) {
+static void copy_tls_data(unsigned char *tls_region)
+{
     unsigned char *tls = tls_from_tls_region(tls_region);
     __sel4runtime_memcpy(tls, env.tls.image, env.tls.image_size);
     unsigned char *tbss = &tls[env.tls.image_size];
@@ -322,7 +339,8 @@ static void copy_tls_data(unsigned char *tls_region) {
     }
 }
 
-static uintptr_t tls_base_from_tls_region(unsigned char *tls_region) {
+static uintptr_t tls_base_from_tls_region(unsigned char *tls_region)
+{
     uintptr_t tls_base = (uintptr_t)tls_region;
 #if !defined(TLS_ABOVE_TP)
     tls_base += env.tls.memory_size;
@@ -330,7 +348,8 @@ static uintptr_t tls_base_from_tls_region(unsigned char *tls_region) {
     return ROUND_UP(tls_base, env.tls.align);
 }
 
-static unsigned char *tls_from_tls_base(uintptr_t tls_base) {
+static unsigned char *tls_from_tls_base(uintptr_t tls_base)
+{
     uintptr_t tls_addr = tls_base;
 #if !defined(TLS_ABOVE_TP)
     tls_addr -= env.tls.memory_size;
@@ -341,13 +360,15 @@ static unsigned char *tls_from_tls_base(uintptr_t tls_base) {
     return (unsigned char *)tls_addr;
 }
 
-static unsigned char *tls_from_tls_region(unsigned char *tls_region) {
+static unsigned char *tls_from_tls_region(unsigned char *tls_region)
+{
     return tls_from_tls_base(tls_base_from_tls_region(tls_region));
 }
 
 static thread_lookup_t *thread_lookup_from_tls_region(
     unsigned char *tls_region
-) {
+)
+{
 #if !defined(TLS_ABOVE_TP)
     return (thread_lookup_t *)tls_base_from_tls_region(tls_region);
 #else
@@ -355,24 +376,26 @@ static thread_lookup_t *thread_lookup_from_tls_region(
 #endif
 }
 
-static const size_t tls_region_size(size_t mem_size, size_t align) {
+static const size_t tls_region_size(size_t mem_size, size_t align)
+{
     return align
-        + ROUND_UP(sizeof (thread_lookup_t), align)
+           + ROUND_UP(sizeof(thread_lookup_t), align)
 #if defined(GAP_ABOVE_TP)
-        + ROUND_UP(GAP_ABOVE_TP, align)
+           + ROUND_UP(GAP_ABOVE_TP, align)
 #endif
-        + ROUND_UP(mem_size, align);
+           + ROUND_UP(mem_size, align);
 }
 
-static void empty_tls(void) {
+static void empty_tls(void)
+{
     env.tls.image = NULL;
     env.tls.align = MIN_ALIGN_BYTES;
     env.tls.image_size = 0;
     env.tls.memory_size = 0;
     env.tls.region_size = tls_region_size(
-        env.tls.memory_size,
-        env.tls.align
-    );
+                              env.tls.memory_size,
+                              env.tls.align
+                          );
 }
 
 /*
@@ -381,7 +404,8 @@ static void empty_tls(void) {
  * This will optimistically assume that the current thread is the
  * initial thread of no thread ever had TLS configured.
  */
-static bool is_initial_thread(void) {
+static bool is_initial_thread(void)
+{
     return env.initial_thread_tls_base == (uintptr_t)NULL
-        || sel4runtime_get_tls_base() == env.initial_thread_tls_base;
+           || sel4runtime_get_tls_base() == env.initial_thread_tls_base;
 }

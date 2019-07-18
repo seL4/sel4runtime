@@ -13,6 +13,7 @@
 #include <sel4runtime/thread_arch.h>
 
 __attribute__((__visibility__("hidden")))
-void *__aeabi_read_tp_c(void) {
+void *__aeabi_read_tp_c(void)
+{
     return (void *)sel4runtime_get_tls_base();
 }

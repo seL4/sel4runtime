@@ -13,37 +13,43 @@
 #include <stdint.h>
 
 #ifdef CONFIG_FSGSBASE_INST
-static inline uintptr_t sel4runtime_read_fs_base(void) {
+static inline uintptr_t sel4runtime_read_fs_base(void)
+{
     uintptr_t reg;
-    __asm__ __volatile__ ("rdfsbase %0" : "=r" (reg) );
+    __asm__ __volatile__("rdfsbase %0" : "=r"(reg));
     return reg;
 }
 
-static inline void sel4runtime_write_fs_base(uintptr_t reg) {
-    __asm__ __volatile__ ("wrfsbase %0" :: "r" (reg) );
+static inline void sel4runtime_write_fs_base(uintptr_t reg)
+{
+    __asm__ __volatile__("wrfsbase %0" :: "r"(reg));
 }
 
-static inline uintptr_t sel4runtime_read_gs_base(void) {
+static inline uintptr_t sel4runtime_read_gs_base(void)
+{
     uintptr_t reg;
-    __asm__ __volatile__ ("rdgsbase %0" : "=r" (reg) );
+    __asm__ __volatile__("rdgsbase %0" : "=r"(reg));
     return reg;
 }
 
-static inline void sel4runtime_write_gs_base(uintptr_t reg) {
-    __asm__ __volatile__ ("wrgsbase %0" :: "r" (reg) );
+static inline void sel4runtime_write_gs_base(uintptr_t reg)
+{
+    __asm__ __volatile__("wrgsbase %0" :: "r"(reg));
 }
 
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline uintptr_t sel4runtime_get_tls_base(void) {
+static inline uintptr_t sel4runtime_get_tls_base(void)
+{
     return sel4runtime_read_fs_base();
 }
 
 /*
  * Set the value of the TLS base for the current thread.
  */
-static inline void sel4runtime_set_tls_base(uintptr_t tls_base) {
+static inline void sel4runtime_set_tls_base(uintptr_t tls_base)
+{
     sel4runtime_write_fs_base(tls_base);
 }
 
@@ -52,9 +58,10 @@ static inline void sel4runtime_set_tls_base(uintptr_t tls_base) {
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline uintptr_t sel4runtime_get_tls_base(void) {
+static inline uintptr_t sel4runtime_get_tls_base(void)
+{
     uintptr_t tp;
-    __asm__ __volatile__ ("mov %%fs:0,%0" : "=r" (tp) );
+    __asm__ __volatile__("mov %%fs:0,%0" : "=r"(tp));
     return tp;
 }
 
@@ -62,7 +69,8 @@ static inline uintptr_t sel4runtime_get_tls_base(void) {
 /*
  * Set the value of the TLS base for the current thread.
  */
-static inline void sel4runtime_set_tls_base(uintptr_t tls_base) {
+static inline void sel4runtime_set_tls_base(uintptr_t tls_base)
+{
     seL4_SetTLSBase(tls_base);
 }
 #else

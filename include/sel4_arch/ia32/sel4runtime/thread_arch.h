@@ -15,9 +15,10 @@
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline uintptr_t sel4runtime_get_tls_base(void) {
+static inline uintptr_t sel4runtime_get_tls_base(void)
+{
     uintptr_t tp;
-    __asm__ __volatile__ ("movl %%gs:0,%0" : "=r" (tp) );
+    __asm__ __volatile__("movl %%gs:0,%0" : "=r"(tp));
     return tp;
 }
 
@@ -25,7 +26,8 @@ static inline uintptr_t sel4runtime_get_tls_base(void) {
 /*
  * Set the value of the TLS base for the current thread.
  */
-static inline void sel4runtime_set_tls_base(uintptr_t tls_base) {
+static inline void sel4runtime_set_tls_base(uintptr_t tls_base)
+{
     seL4_SetTLSBase(tls_base);
 }
 #else
