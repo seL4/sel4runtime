@@ -24,7 +24,6 @@ static inline uintptr_t sel4runtime_read_tp(void)
 
 static inline void sel4runtime_write_tp(uintptr_t reg)
 {
-    uintptr_t tp;
     __asm__ __volatile__("or tp, %0, x0" :: "r"(reg));
 }
 
