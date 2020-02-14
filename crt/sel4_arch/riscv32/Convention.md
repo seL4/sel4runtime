@@ -17,7 +17,7 @@
 * `a0` to `a7` are used to pass the first 8 arguments to a subroutine.
 * `a0` to `a1` are used to subroutine return values.
 
-# Prologue
+## Prologue
 
 1. push the value of `ra` onto the stack,
 2. push the value of `fp` onto the stack, then
@@ -30,7 +30,7 @@ sw    ra, 4(sp)
 addi  s0, sp, 0
 ```
 
-# Epilogue
+## Epilogue
 
 ```asm
 addi  sp, s0, 0

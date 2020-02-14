@@ -35,7 +35,7 @@ It is also the responsibility of the caller to ensure that when a
 function is called that the stack remains aligned to 16-bytes up to the
 `call` instruction.
 
-# Prologue
+## Prologue
 
 1. push `%rbp` onto the stack,
 2. read the current value of `%rsp` into `%rbp`
@@ -49,14 +49,14 @@ mov  %rsp, %rbp
 // subq $0x0, %rsp
 ```
 
-# Epilogue
+## Epilogue
 
 ```asm
 leave
 ret
 ```
 
-# Argument Passing
+## Argument Passing
 
 Arguments are passed first using registers `%rdi`, `%rsi`, `%rdx`,
 `%rcx`, `%r8`, `%r9`, `%xmm0`–`%xmm7`, then on the stack in

@@ -38,7 +38,7 @@ return, the stack may be misaligned when a function is returned from. It
 is the responsibility of the caller to re-align the stack if this
 occurs.
 
-# Prologue
+## Prologue
 
 1. push `%ebp` onto the stack,
 2. read the current value of `%esp` into `%ebp`
@@ -51,14 +51,14 @@ mov  %esp, %ebp
 sub  $0x8, %esp
 ```
 
-# Epilogue
+## Epilogue
 
 ```asm
 leave
 ret
 ```
 
-# Argument Passing
+## Argument Passing
 
 Arguments are passed on the stack in `%ebp+4+(4 * n)` (between the
 return address and the return frame pointer).

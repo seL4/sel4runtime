@@ -24,7 +24,7 @@ files:
   symbols and occurs in the linker arguments after all other object
   files.
 
-# Constructors and Destructors.
+## Constructors and Destructors.
 
 The C runtime provides a mechanism for providing functions to be
 executed before and after `main` as constructors and destructors for
@@ -50,7 +50,7 @@ of the array.
 
 [system-v-abi]: http://www.sco.com/developers/gabi/latest/ch4.sheader.html#special_sections
 
-# The `_start` Symbol
+## The `_start` Symbol
 
 Arguments to `_start` are on the stack for all platforms.
 The top of the stack is structured as so:

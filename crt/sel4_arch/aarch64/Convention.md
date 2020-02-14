@@ -23,7 +23,7 @@ Additionally:
 
 * The stack must always be quad-word aligned, i.e. `sp` mod 16 == 0.
 
-# Prologue
+## Prologue
 
 1. push the value of `lr` onto the stack,
 2. push the value of `fp` onto the stack, then
@@ -34,7 +34,7 @@ stp fp, lr, [sp, -16]!
 mov fp, sp
 ```
 
-# Epilogue
+## Epilogue
 
 ```asm
 ldp fp, lr, [sp], #16
