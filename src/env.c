@@ -262,11 +262,10 @@ void __sel4runtime_load_env(
 
     env.argc = argc;
     env.argv = argv;
-
-    __sel4runtime_run_constructors();
-
     env.auxv = auxv;
     env.envp = envp;
+
+    __sel4runtime_run_constructors();
 }
 
 static void name_process(char const *name)
