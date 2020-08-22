@@ -85,6 +85,10 @@ static struct {
 
     // Environment vector
     char const *const *envp;
+
+    // Exit callbacks
+    sel4runtime_exit_cb *exit_cb;
+    sel4runtime_pre_exit_cb *pre_exit_cb;
 } env = {
     /*
      * Initialise the initial thread as referring to the global thread
@@ -173,21 +177,33 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory)
     return env.initial_thread_tls_base;
 }
 
+sel4runtime_exit_cb *sel4runtime_set_exit(sel4runtime_exit_cb *cb)
+{
+    sel4runtime_exit_cb *old = env.exit_cb;
+    env.exit_cb = cb;
+    return old;
+}
+
+sel4runtime_pre_exit_cb *sel4runtime_set_pre_exit(sel4runtime_pre_exit_cb *cb)
+{
+    sel4runtime_pre_exit_cb *old = env.pre_exit_cb;
+    env.pre_exit_cb = cb;
+    return old;
+}
+
 void sel4runtime_exit(int code)
 {
-    if (!is_initial_thread() && env.initial_thread_tcb) {
-        seL4_TCB_Suspend(env.initial_thread_tcb);
+    if (env.pre_exit_cb != NULL) {
+        code = env.pre_exit_cb(code);
     }
 
     __sel4runtime_run_destructors();
 
-    /* Suspend the process */
-    while (true) {
-        if (is_initial_thread() && env.initial_thread_tcb) {
-            seL4_TCB_Suspend(env.initial_thread_tcb);
-        }
-        seL4_Yield();
-    }
+    /* If the exit is never set this will try and call a NULL function
+     * pointer which should result in a fault. This is as good a way as
+     * any to exit the process if we don't know anything better about
+     * the environment. */
+    env.exit_cb(code);
 }
 
 int __sel4runtime_write_tls_variable(

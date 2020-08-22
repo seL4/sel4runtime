@@ -122,6 +122,32 @@ int __sel4runtime_write_tls_variable(
 );
 
 /*
+ * Callback function type that can be used to exit a process.
+ */
+typedef void sel4runtime_exit_cb(int code);
+
+/*
+ * Set the callback used to exit a process.
+ *
+ * Returns the current exit function.
+ */
+sel4runtime_exit_cb *sel4runtime_set_exit(sel4runtime_exit_cb *cb);
+
+/*
+ * Callback function type that can be used to exit a process.
+ *
+ * Should return the exit code to be generated.
+ */
+typedef int sel4runtime_pre_exit_cb(int code);
+
+/*
+ * Set the callback called before destructors are run for a prcess exit..
+ *
+ * Returns the current pre-exit function.
+ */
+sel4runtime_pre_exit_cb *sel4runtime_set_pre_exit(sel4runtime_pre_exit_cb *cb);
+
+/*
  * Exit the runtime.
  *
  * This will attempt to suspend the initial thread of the process. Any
