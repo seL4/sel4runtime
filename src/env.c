@@ -130,6 +130,16 @@ int sel4runtime_argc(void)
     return env.argc;
 }
 
+char const *const *sel4runtime_envp(void)
+{
+    return env.envp;
+}
+
+auxv_t const *sel4runtime_auxv(void)
+{
+    return env.auxv;
+}
+
 seL4_BootInfo *sel4runtime_bootinfo(void)
 {
     return env.bootinfo;

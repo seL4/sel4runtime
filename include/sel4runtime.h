@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <sel4/sel4.h>
 #include <sel4runtime/thread.h>
+#include <sel4runtime/auxv.h>
 
 #pragma once
 
@@ -37,6 +38,16 @@ char const *const *sel4runtime_argv(void);
  * Get the length of argument vector passed to main.
  */
 int sel4runtime_argc(void);
+
+/*
+ * Get the list of environment variables passed to main.
+ */
+char const *const *sel4runtime_envp(void);
+
+/*
+ * Get the list of auxiliary vectors.
+ */
+auxv_t const *sel4runtime_auxv(void);
 
 /*
  * Get the address of the TLS base register.
