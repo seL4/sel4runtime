@@ -80,6 +80,10 @@ static struct {
         size_t offset;
     } tls;
 
+    // Argument vector
+    char const *const *argv;
+    int argc;
+
     // Auxiliary vector
     auxv_t const *auxv;
 
@@ -114,6 +118,16 @@ static bool is_initial_thread(void);
 char const *sel4runtime_process_name(void)
 {
     return env.process_name;
+}
+
+char const *const *sel4runtime_argv(void)
+{
+    return env.argv;
+}
+
+int sel4runtime_argc(void)
+{
+    return env.argc;
 }
 
 seL4_BootInfo *sel4runtime_bootinfo(void)
@@ -232,16 +246,23 @@ int __sel4runtime_write_tls_variable(
 }
 
 void __sel4runtime_load_env(
-    char const *arg0,
-    char const *const *envp,
+    int argc,
+    char const * const *argv,
+    char const * const *envp,
     auxv_t const auxv[]
 )
 {
     empty_tls();
     parse_auxv(auxv);
     parse_phdrs();
-    name_process(arg0);
+    if (argc > 0) {
+        name_process(argv[0]);
+    }
     try_init_static_tls();
+
+    env.argc = argc;
+    env.argv = argv;
+
     __sel4runtime_run_constructors();
 
     env.auxv = auxv;

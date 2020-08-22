@@ -20,7 +20,7 @@ void __sel4runtime_start_main(
     char const * const *envp,
     auxv_t const auxv[]
 ) {
-    __sel4runtime_load_env(argv[0], envp, auxv);
+    __sel4runtime_load_env(argc, argv, envp, auxv);
 
     sel4runtime_exit(main(argc, argv, envp));
 }

@@ -21,7 +21,8 @@
  * functions.
  */
 void __sel4runtime_load_env(
-    char const *arg0,
+    int argc,
+    char const * const *argv,
     char const * const *envp,
     auxv_t const auxv[]
 );

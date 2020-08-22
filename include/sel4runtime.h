@@ -29,6 +29,16 @@
 char const *sel4runtime_process_name(void);
 
 /*
+ * Get the argument vector passed to main.
+ */
+char const *const *sel4runtime_argv(void);
+
+/*
+ * Get the length of argument vector passed to main.
+ */
+int sel4runtime_argc(void);
+
+/*
  * Get the address of the TLS base register.
  */
 static inline uintptr_t sel4runtime_get_tls_base(void);
