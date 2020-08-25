@@ -12,8 +12,7 @@
 #include <sel4/sel4.h>
 #include <sel4runtime/start.h>
 #include <stdint.h>
-
-#include "start.h"
+#include <stddef.h>
 
 /*
  * As this file is only included when we are running a root server,

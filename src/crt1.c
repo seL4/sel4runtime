@@ -10,7 +10,7 @@
  * @TAG(DATA61_BSD)
  */
 #include <sel4runtime.h>
-#include "start.h"
+#include <sel4runtime/start.h>
 
 /*
  * This function is simply passed a pointer to the inital stack from the

@@ -29,3 +29,16 @@ void __sel4runtime_start_main(
     char const * const *envp,
     auxv_t const auxv[]
 );
+
+/*
+ * This performs all of the work of loading the execution environment.
+ * It mainly operates be loading values out of the environment variables
+ * and auxiliary vectors and into variables accessible via interface
+ * functions.
+ */
+void __sel4runtime_load_env(
+    int argc,
+    char const * const *argv,
+    char const * const *envp,
+    auxv_t const auxv[]
+);

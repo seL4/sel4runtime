@@ -11,7 +11,7 @@
  */
 #include <sel4/sel4.h>
 #include <sel4runtime.h>
-#include "start.h"
+#include <sel4runtime/start.h>
 
 void __sel4runtime_start_main(
     int (*main)(),
