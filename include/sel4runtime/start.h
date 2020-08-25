@@ -25,8 +25,8 @@ int main();
 void __sel4runtime_start_main(
     int (*main)(),
     unsigned long argc,
-    char const * const *argv,
-    char const * const *envp,
+    char const *const *argv,
+    char const *const *envp,
     auxv_t const auxv[]
 );
 
@@ -38,7 +38,7 @@ void __sel4runtime_start_main(
  */
 void __sel4runtime_load_env(
     int argc,
-    char const * const *argv,
-    char const * const *envp,
+    char const *const *argv,
+    char const *const *envp,
     auxv_t const auxv[]
 );

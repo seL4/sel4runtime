@@ -39,8 +39,8 @@ long sel4_vsyscall(long sysnum, ...);
  * This is invoked by _sel4_start, which simply sets up a static stack
  * and passes the argument to us.
  */
-void __sel4_start_root(seL4_BootInfo *boot_info) {
-
+void __sel4_start_root(seL4_BootInfo *boot_info)
+{
     uintptr_t tdata_start = (uintptr_t) &_tdata_start[0];
     uintptr_t tdata_end = (uintptr_t) &_tdata_end[0];
     uintptr_t tbss_end = (uintptr_t) &_tbss_end[0];
@@ -81,12 +81,12 @@ void __sel4_start_root(seL4_BootInfo *boot_info) {
         },
     };
 
-    char const * const envp[] = {
+    char const *const envp[] = {
         "seL4=1",
         NULL,
     };
 
-    char const * const argv[] = {
+    char const *const argv[] = {
         "rootserver",
         NULL,
     };
