@@ -11,47 +11,62 @@
 -->
 # The seL4 Run-time
 
-This provides a minimal runtime for running a C or C-compatible process, 
-i.e. one with a C-like `main`, in a minimal seL4 environment.
+This repository provides a minimal runtime for running a C or C-compatible process, 
+i.e., one with a C-like `main()`, in a minimal seL4 environment.
 
 This runtime provides mechanisms for accessing everything a standard
-process would expect to need at start and provides additional utilities
-for delegating the creation of processes and threads.
+process or thread would expect to need at start, including thread
+local storage.
 
-## Standard Processes
+To use the library, you just need to write a C program that starts
+from `main()`, and compile it into an ELF file; the documentation
+below gives implementation details.  There is a CMakeLists.txt file
+provided to hook sel4runtime into your project.
 
-All processes (except for the root task) will use the entry-points
-provided here as normal and require the `_start` entry-point provided in
+## Implementation
+
+### Root Task
+
+The root task needs some extra work before `main()` is called.  The
+runtime calls `_sel4_start()`, provided by this library, that takes
+`seL4_BootInfo` as argument in a register, and has not been given a
+stack.
+
+This entry-point sets up a static 16 kilobyte stack before invoking
+`__sel4_start_root()`, also provided by the runtime, which
+constructs the argument, environment, and auxiliary vectors. It then
+passes the constructed vectors, along with the address of `main()`,
+into `__sel4_start_main` which configures the runtime according to the
+architecture's conventions before starting calling `main()`.
+
+### Standard Processes
+
+All processes other than the root task use the `_start` entry-point provided in
 the architecture-dependant `crt0.S`. This will then bootstrap into the
 runtime entry-point `__sel4_start_c` which simply processes the stack to
 find the argument, environment, and auxiliary vectors.
 
-The found vectors, along with`main`, are passed into
+These vectors, along with the address of `main()`, are passed into
 `__sel4_start_main` which configures the runtime before starting
-`main`.
+`main`.  The architecture's standard post-main() processing is handled
+by `__start`.
 
-## Root Task
 
-The root task requires an alternate entry-point `_sel4_start` which
-assumes that the `seL4_BootInfo` argument has been passed to it and that
-it has not been given a stack.
+### Thread-local storage layout
 
-This entry-point moves onto a static 16 kilobyte stack before invoking
-`__sel4_start_root`, which constructs the argument, environment, and
-auxiliary vectors. It then passes the constructed vectors, along with
-`main`, into `__sel4_start_main` which configures the runtime before
-starting `main`.
+There are two supported layouts for thread local storage.
 
-## Thread-local storage layout
+Intel X86\_64 and IA32 use a TLS pointer that contains the address
+immediately after the TLS region: the region is _below_ it in memory.
+Other architectures use a TLS pointer that contains the lowest address in
+the TLS.
 
-There are two standard layouts for thread local storage commonly used.
-One where the TLS base address refers to the first address in memory of
-the region and one where it refers to the address that immediately
-follows the region. Intel's x86_64 and ia32 architectures use the latter
-method as it aligns with the segmentation view of memory presented by
-the processor. Most other platforms use former method, where the TLS can
-be said to be 'above' the thread pointer.
+For X86, memory immediately _above_ the address is available for the C
+library to use as thread metadata.  For other architectures, two words are
+allocated right at the top of the TLS region.  The first word is
+initialised to point to the thread local storage, either at one past
+its highest address (X86 family) or at its lowest address (other
+architectures). 
 
-In order to store metadata for the current thread in the same memory
-allocation as the TLS, the run-time utilises memory on the other side of
-the thread pointer for it's thread structure.
+In any case, the size of the TLS is determined by values in the ELF
+file from which the program is loaded.

@@ -46,12 +46,8 @@ static struct {
     seL4_BootInfo *bootinfo;
 
     /*
-     * The initial thread object is initially set to a static thread
-     * object. It is only used until a TLS is set up for the first
-     * thread.
-     *
-     * Once the TLS has been initialised for the first thread, this is
-     * then set to NULL and the thread local reference should be used.
+     * Once the TLS has been initialised for the first (root) thread,
+     * initial_thread_tls_base is no longer NULL.
      */
     uintptr_t initial_thread_tls_base;
     seL4_CPtr initial_thread_tcb;
@@ -72,7 +68,7 @@ static struct {
         size_t image_size;
         // The size needed to store the full TLS.
         size_t memory_size;
-        // The size needed to store the TLS and the thread structure.
+        // The size needed to store the TLS and any library-defined thread metadata.
         size_t region_size;
         // Alignment needed for the TLS data.
         size_t align;
@@ -93,13 +89,7 @@ static struct {
     // Exit callbacks
     sel4runtime_exit_cb *exit_cb;
     sel4runtime_pre_exit_cb *pre_exit_cb;
-} env = {
-    /*
-     * Initialise the initial thread as referring to the global thread
-     * object.
-     */
-    .initial_thread_tls_base = (uintptr_t)NULL,
-};
+} env; /* In BSS: All fields initialised to zero */
 
 static void name_process(char const *name);
 static void parse_auxv(auxv_t const auxv[]);
@@ -152,11 +142,6 @@ size_t sel4runtime_get_tls_size(void)
 
 int sel4runtime_initial_tls_enabled(void)
 {
-    /*
-     * If the TLS for the initial process has been activated, the thread
-     * object in the TLS will be used rather than the static thread
-     * object.
-     */
     return env.initial_thread_tls_base != (uintptr_t)NULL;
 }
 
@@ -223,10 +208,12 @@ void sel4runtime_exit(int code)
 
     __sel4runtime_run_destructors();
 
-    /* If the exit is never set this will try and call a NULL function
-     * pointer which should result in a fault. This is as good a way as
-     * any to exit the process if we don't know anything better about
-     * the environment. */
+    /* 
+     * If the exit function is never set in the environment, this will
+     * try to call a NULL function pointer, which should result in a
+     * fault. This is as good a way as any to exit the process if we
+     * don't know anything better about the environment.
+     */
     env.exit_cb(code);
 }
 
@@ -349,6 +336,10 @@ static void parse_phdrs(void)
     }
 }
 
+/*
+ * Set up the environment to point at the Thread Local Storage initial 
+ * contents in an ELF file image in memory.
+ */
 static void load_tls_data(Elf_Phdr *header)
 {
     env.tls.image = (void *) header->p_vaddr;
@@ -365,6 +356,10 @@ static void load_tls_data(Elf_Phdr *header)
                           );
 }
 
+/* 
+ * If the static TLS is big enough, copy the initial contents
+ * of the TLS into it.
+ */
 static void try_init_static_tls(void)
 {
     if (env.tls.region_size <= sizeof(static_tls)) {
@@ -408,7 +403,7 @@ static unsigned char *tls_from_tls_base(uintptr_t tls_base)
 
 static unsigned char *tls_from_tls_region(unsigned char *tls_region)
 {
-    return tls_from_tls_base(tls_base_from_tls_region(tls_region));
+    return tls_addr_from_tls_base(tls_base_from_tls_region(tls_region));
 }
 
 static thread_lookup_t *thread_lookup_from_tls_region(
@@ -445,10 +440,10 @@ static void empty_tls(void)
 }
 
 /*
- * Check if the executing thread is the inital thread of the process.
+ * Check if the executing thread is the initial thread of the process.
  *
- * This will optimistically assume that the current thread is the
- * initial thread of no thread ever had TLS configured.
+ * This optimistically assumes that the current thread is the
+ * initial thread if no thread ever had TLS configured.
  */
 static bool is_initial_thread(void)
 {
