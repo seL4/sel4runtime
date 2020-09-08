@@ -50,17 +50,17 @@ char const *const *sel4runtime_envp(void);
 auxv_t const *sel4runtime_auxv(void);
 
 /*
- * Get the address of the TLS base register.
+ * Get the address of the TLS region
  */
 static inline uintptr_t sel4runtime_get_tls_base(void);
 
 /*
- * Set the address of the TLS base register.
+ * Set the address of the TLS region
  */
 static inline void sel4runtime_set_tls_base(uintptr_t tls_base);
 
 /*
- * Get the bootinfo pointer if the process was provided a bootinfo
+ * Get the bootinfo pointer if the process was provided with a bootinfo
  * cspace descriptor.
  */
 seL4_BootInfo *sel4runtime_bootinfo(void);
