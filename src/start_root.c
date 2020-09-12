@@ -11,8 +11,8 @@
  */
 #include <sel4/sel4.h>
 #include <sel4runtime/start.h>
-#include <stdint.h>
-#include <stddef.h>
+#include <sel4runtime/stdint.h>
+#include <sel4runtime/stddef.h>
 
 /*
  * As this file is only included when we are running a root server,
@@ -41,9 +41,9 @@ long sel4_vsyscall(long sysnum, ...);
  */
 void __sel4_start_root(seL4_BootInfo *boot_info)
 {
-    uintptr_t tdata_start = (uintptr_t) &_tdata_start[0];
-    uintptr_t tdata_end = (uintptr_t) &_tdata_end[0];
-    uintptr_t tbss_end = (uintptr_t) &_tbss_end[0];
+    sel4runtime_uintptr_t tdata_start = (sel4runtime_uintptr_t) &_tdata_start[0];
+    sel4runtime_uintptr_t tdata_end = (sel4runtime_uintptr_t) &_tdata_end[0];
+    sel4runtime_uintptr_t tbss_end = (sel4runtime_uintptr_t) &_tbss_end[0];
 
     Elf_Phdr tls_header = {
         .p_type   = PT_TLS,
@@ -83,12 +83,12 @@ void __sel4_start_root(seL4_BootInfo *boot_info)
 
     char const *const envp[] = {
         "seL4=1",
-        NULL,
+        SEL4RUNTIME_NULL,
     };
 
     char const *const argv[] = {
         "rootserver",
-        NULL,
+        SEL4RUNTIME_NULL,
     };
 
     __sel4runtime_start_main(main, ARRAY_LENGTH(argv), argv, envp, auxv);

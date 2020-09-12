@@ -9,8 +9,8 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include <stddef.h>
-#include <stdint.h>
+#include <sel4runtime/stddef.h>
+#include <sel4runtime/stdint.h>
 
 #define ALIGN_UP(x, n) (((x) + (n) - 1) & ~((n) - 1))
 #define ALIGN_DOWN(x, n) ((x) & ~((n) - 1))
@@ -35,6 +35,6 @@
 void *__sel4runtime_memcpy(
     void *restrict dest,
     const void *restrict src,
-    size_t n
+    sel4runtime_size_t n
 );
-void *__sel4runtime_memset(void *dest, int c, size_t n);
+void *__sel4runtime_memset(void *dest, int c, sel4runtime_size_t n);

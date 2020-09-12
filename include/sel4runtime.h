@@ -14,8 +14,8 @@
  *
  * This provides an interface to the values managed by sel4runtime.
  */
-#include <stddef.h>
-#include <stdint.h>
+#include <sel4runtime/stddef.h>
+#include <sel4runtime/stdint.h>
 #include <sel4/sel4.h>
 #include <sel4runtime/thread.h>
 #include <sel4runtime/auxv.h>
@@ -52,12 +52,12 @@ auxv_t const *sel4runtime_auxv(void);
 /*
  * Get the address of the TLS base register.
  */
-static inline uintptr_t sel4runtime_get_tls_base(void);
+static inline sel4runtime_uintptr_t sel4runtime_get_tls_base(void);
 
 /*
  * Set the address of the TLS base register.
  */
-static inline void sel4runtime_set_tls_base(uintptr_t tls_base);
+static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base);
 
 /*
  * Get the bootinfo pointer if the process was provided a bootinfo
@@ -68,13 +68,13 @@ seL4_BootInfo *sel4runtime_bootinfo(void);
 /*
  * Get the size in bytes needed to store the thread's TLS.
  */
-size_t sel4runtime_get_tls_size(void);
+sel4runtime_size_t sel4runtime_get_tls_size(void);
 
 /*
  * Get the offset used to calculate the thread pointer from the
  * starting address of the thread area.
  */
-size_t sel4runtime_get_tp_offset(void);
+sel4runtime_size_t sel4runtime_get_tp_offset(void);
 
 /*
  * Check if the TLS for the initial thread is enabled.
@@ -93,7 +93,7 @@ int sel4runtime_initial_tls_enabled(void);
  * @returns the pointer to the TLS that should be used to call
  *          seL4_TCB_SetTLSBase or NULL on error.
  */
-uintptr_t sel4runtime_write_tls_image(void *tls_memory);
+sel4runtime_uintptr_t sel4runtime_write_tls_image(void *tls_memory);
 
 /*
  * Move the TLS for the current thread into a new memory location.
@@ -109,7 +109,7 @@ uintptr_t sel4runtime_write_tls_image(void *tls_memory);
  * @returns the pointer to the TLS that should be used to call
  *          seL4_TCB_SetTLSBase.
  */
-uintptr_t sel4runtime_move_initial_tls(void *tls_memory);
+sel4runtime_uintptr_t sel4runtime_move_initial_tls(void *tls_memory);
 
 /*
  * Writes into a thread_local variable of another thread.
@@ -136,10 +136,10 @@ uintptr_t sel4runtime_move_initial_tls(void *tls_memory);
  * This assumes that TLS has been initialised for the current thread.
  */
 int __sel4runtime_write_tls_variable(
-    uintptr_t dest_tls_base,
+    sel4runtime_uintptr_t dest_tls_base,
     unsigned char *local_tls_dest,
     unsigned char *src,
-    size_t bytes
+    sel4runtime_size_t bytes
 );
 
 /*

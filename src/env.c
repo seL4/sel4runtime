@@ -9,9 +9,6 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include <assert.h>
-#include <stdbool.h>
-#include <string.h>
 #include <sel4runtime.h>
 #include <sel4runtime/auxv.h>
 #include <sel4runtime/mode/elf.h>
@@ -28,14 +25,14 @@
 #define MIN_ALIGNED __attribute__((aligned (MIN_ALIGN_BYTES)))
 
 // Global vsyscall handler (defined in musllibc)
-extern size_t __sysinfo;
+extern sel4runtime_size_t __sysinfo;
 
 // Static TLS for initial thread.
 static char static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS] MIN_ALIGNED = {};
 
 // Thread lookup pointers.
 typedef struct {
-    uintptr_t tls_base;
+    sel4runtime_uintptr_t tls_base;
 } thread_lookup_t;
 
 // The seL4 runtime environment.
@@ -53,14 +50,14 @@ static struct {
      * Once the TLS has been initialised for the first thread, this is
      * then set to NULL and the thread local reference should be used.
      */
-    uintptr_t initial_thread_tls_base;
+    sel4runtime_uintptr_t initial_thread_tls_base;
     seL4_CPtr initial_thread_tcb;
     seL4_IPCBuffer *initial_thread_ipc_buffer;
 
     // ELF Headers
     struct {
-        size_t count;
-        size_t size;
+        sel4runtime_size_t count;
+        sel4runtime_size_t size;
         Elf_Phdr *headers;
     } program_header;
 
@@ -69,15 +66,15 @@ static struct {
         // The location of the initial image in memory.
         void *image;
         // The size of the initial image in memory.
-        size_t image_size;
+        sel4runtime_size_t image_size;
         // The size needed to store the full TLS.
-        size_t memory_size;
+        sel4runtime_size_t memory_size;
         // The size needed to store the TLS and the thread structure.
-        size_t region_size;
+        sel4runtime_size_t region_size;
         // Alignment needed for the TLS data.
-        size_t align;
+        sel4runtime_size_t align;
         // Offset of the TLS data from the thread pointer.
-        size_t offset;
+        sel4runtime_size_t offset;
     } tls;
 
     // Argument vector
@@ -98,7 +95,7 @@ static struct {
      * Initialise the initial thread as referring to the global thread
      * object.
      */
-    .initial_thread_tls_base = (uintptr_t)NULL,
+    .initial_thread_tls_base = (sel4runtime_uintptr_t)SEL4RUNTIME_NULL,
 };
 
 static void name_process(char const *name);
@@ -107,13 +104,13 @@ static void parse_phdrs(void);
 static void load_tls_data(Elf_Phdr *header);
 static void try_init_static_tls(void);
 static void copy_tls_data(unsigned char *tls);
-static uintptr_t tls_base_from_tls_region(unsigned char *tls_region);
-static unsigned char *tls_from_tls_base(uintptr_t tls_base);
+static sel4runtime_uintptr_t tls_base_from_tls_region(unsigned char *tls_region);
+static unsigned char *tls_from_tls_base(sel4runtime_uintptr_t tls_base);
 static unsigned char *tls_from_tls_region(unsigned char *tls_region);
 static thread_lookup_t *thread_lookup_from_tls_region(unsigned char *tls_region);
-static const size_t tls_region_size(size_t mem_size, size_t align);
+static const sel4runtime_size_t tls_region_size(sel4runtime_size_t mem_size, sel4runtime_size_t align);
 static void empty_tls(void);
-static bool is_initial_thread(void);
+static int is_initial_thread(void);
 
 char const *sel4runtime_process_name(void)
 {
@@ -145,7 +142,7 @@ seL4_BootInfo *sel4runtime_bootinfo(void)
     return env.bootinfo;
 }
 
-size_t sel4runtime_get_tls_size(void)
+sel4runtime_size_t sel4runtime_get_tls_size(void)
 {
     return env.tls.region_size;
 }
@@ -157,13 +154,13 @@ int sel4runtime_initial_tls_enabled(void)
      * object in the TLS will be used rather than the static thread
      * object.
      */
-    return env.initial_thread_tls_base != (uintptr_t)NULL;
+    return env.initial_thread_tls_base != (sel4runtime_uintptr_t)SEL4RUNTIME_NULL;
 }
 
-uintptr_t sel4runtime_write_tls_image(void *tls_memory)
+sel4runtime_uintptr_t sel4runtime_write_tls_image(void *tls_memory)
 {
-    if (tls_memory == NULL) {
-        return (uintptr_t)NULL;
+    if (tls_memory == SEL4RUNTIME_NULL) {
+        return (sel4runtime_uintptr_t)SEL4RUNTIME_NULL;
     }
 
     copy_tls_data(tls_memory);
@@ -171,20 +168,20 @@ uintptr_t sel4runtime_write_tls_image(void *tls_memory)
     return tls_base_from_tls_region(tls_memory);
 }
 
-uintptr_t sel4runtime_move_initial_tls(void *tls_memory)
+sel4runtime_uintptr_t sel4runtime_move_initial_tls(void *tls_memory)
 {
-    if (tls_memory == NULL) {
-        return (uintptr_t)NULL;
+    if (tls_memory == SEL4RUNTIME_NULL) {
+        return (sel4runtime_uintptr_t)SEL4RUNTIME_NULL;
     }
 
-    uintptr_t tls_base = sel4runtime_write_tls_image(tls_memory);
-    if (tls_base == (uintptr_t)NULL) {
-        return (uintptr_t)NULL;
+    sel4runtime_uintptr_t tls_base = sel4runtime_write_tls_image(tls_memory);
+    if (tls_base == (sel4runtime_uintptr_t)SEL4RUNTIME_NULL) {
+        return (sel4runtime_uintptr_t)SEL4RUNTIME_NULL;
     }
 
     sel4runtime_set_tls_base(tls_base);
 
-    if (env.initial_thread_ipc_buffer != NULL) {
+    if (env.initial_thread_ipc_buffer != SEL4RUNTIME_NULL) {
         __sel4_ipc_buffer = env.initial_thread_ipc_buffer;
     }
 
@@ -217,7 +214,7 @@ sel4runtime_pre_exit_cb *sel4runtime_set_pre_exit(sel4runtime_pre_exit_cb *cb)
 
 void sel4runtime_exit(int code)
 {
-    if (env.pre_exit_cb != NULL) {
+    if (env.pre_exit_cb != SEL4RUNTIME_NULL) {
         code = env.pre_exit_cb(code);
     }
 
@@ -231,16 +228,16 @@ void sel4runtime_exit(int code)
 }
 
 int __sel4runtime_write_tls_variable(
-    uintptr_t dest_tls_base,
+    sel4runtime_uintptr_t dest_tls_base,
     unsigned char *local_tls_dest,
     unsigned char *src,
-    size_t bytes
+    sel4runtime_size_t bytes
 )
 {
-    uintptr_t local_tls_base = sel4runtime_get_tls_base();
+    sel4runtime_uintptr_t local_tls_base = sel4runtime_get_tls_base();
     unsigned char *local_tls = tls_from_tls_base(local_tls_base);
-    size_t offset = local_tls_dest - local_tls;
-    size_t tls_size = env.tls.memory_size;
+    sel4runtime_size_t offset = local_tls_dest - local_tls;
+    sel4runtime_size_t tls_size = env.tls.memory_size;
 
     // Write must not go past end of TLS.
     if (offset > tls_size || offset + bytes > tls_size) {
@@ -308,12 +305,12 @@ static void parse_auxv(auxv_t const auxv[])
             break;
         }
         case AT_SYSINFO: {
-            __sysinfo = (size_t)(auxv[i].a_un.a_ptr);
+            __sysinfo = (sel4runtime_size_t)(auxv[i].a_un.a_ptr);
             break;
         }
         case AT_SEL4_BOOT_INFO: {
             seL4_BootInfo *bootinfo = auxv[i].a_un.a_ptr;
-            if (bootinfo == NULL) {
+            if (bootinfo == SEL4RUNTIME_NULL) {
                 break;
             }
             env.bootinfo = bootinfo;
@@ -337,7 +334,7 @@ static void parse_auxv(auxv_t const auxv[])
 
 static void parse_phdrs(void)
 {
-    for (size_t h = 0; h < env.program_header.count; h++) {
+    for (sel4runtime_size_t h = 0; h < env.program_header.count; h++) {
         Elf_Phdr *header = &env.program_header.headers[h];
         switch (header->p_type) {
         case PT_TLS:
@@ -380,23 +377,23 @@ static void copy_tls_data(unsigned char *tls_region)
     __sel4runtime_memset(tbss, 0, env.tls.memory_size - env.tls.image_size);
 
     thread_lookup_t *lookup = thread_lookup_from_tls_region(tls_region);
-    if (lookup != NULL) {
+    if (lookup != SEL4RUNTIME_NULL) {
         lookup->tls_base = tls_base_from_tls_region(tls_region);
     }
 }
 
-static uintptr_t tls_base_from_tls_region(unsigned char *tls_region)
+static sel4runtime_uintptr_t tls_base_from_tls_region(unsigned char *tls_region)
 {
-    uintptr_t tls_base = (uintptr_t)tls_region;
+    sel4runtime_uintptr_t tls_base = (sel4runtime_uintptr_t)tls_region;
 #if !defined(TLS_ABOVE_TP)
     tls_base += env.tls.memory_size;
 #endif
     return ROUND_UP(tls_base, env.tls.align);
 }
 
-static unsigned char *tls_from_tls_base(uintptr_t tls_base)
+static unsigned char *tls_from_tls_base(sel4runtime_uintptr_t tls_base)
 {
-    uintptr_t tls_addr = tls_base;
+    sel4runtime_uintptr_t tls_addr = tls_base;
 #if !defined(TLS_ABOVE_TP)
     tls_addr -= env.tls.memory_size;
 #endif
@@ -418,11 +415,11 @@ static thread_lookup_t *thread_lookup_from_tls_region(
 #if !defined(TLS_ABOVE_TP)
     return (thread_lookup_t *)tls_base_from_tls_region(tls_region);
 #else
-    return NULL;
+    return SEL4RUNTIME_NULL;
 #endif
 }
 
-static const size_t tls_region_size(size_t mem_size, size_t align)
+static const sel4runtime_size_t tls_region_size(sel4runtime_size_t mem_size, sel4runtime_size_t align)
 {
     return align
            + ROUND_UP(sizeof(thread_lookup_t), align)
@@ -434,7 +431,7 @@ static const size_t tls_region_size(size_t mem_size, size_t align)
 
 static void empty_tls(void)
 {
-    env.tls.image = NULL;
+    env.tls.image = SEL4RUNTIME_NULL;
     env.tls.align = MIN_ALIGN_BYTES;
     env.tls.image_size = 0;
     env.tls.memory_size = 0;
@@ -450,8 +447,8 @@ static void empty_tls(void)
  * This will optimistically assume that the current thread is the
  * initial thread of no thread ever had TLS configured.
  */
-static bool is_initial_thread(void)
+static int is_initial_thread(void)
 {
-    return env.initial_thread_tls_base == (uintptr_t)NULL
+    return env.initial_thread_tls_base == (sel4runtime_uintptr_t)SEL4RUNTIME_NULL
            || sel4runtime_get_tls_base() == env.initial_thread_tls_base;
 }

@@ -26,7 +26,7 @@
 
 #include "util.h"
 
-void *__sel4runtime_memcpy(void *restrict dest, const void *restrict src, size_t n)
+void *__sel4runtime_memcpy(void *restrict dest, const void *restrict src, sel4runtime_size_t n)
 {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
@@ -41,12 +41,12 @@ void *__sel4runtime_memcpy(void *restrict dest, const void *restrict src, size_t
 #define RS >>
 #endif
 
-	typedef uint32_t __attribute__((__may_alias__)) u32;
-	uint32_t w, x;
+	typedef sel4runtime_uint32_t __attribute__((__may_alias__)) u32;
+	sel4runtime_uint32_t w, x;
 
-	for (; (uintptr_t)s % 4 && n; n--) *d++ = *s++;
+	for (; (sel4runtime_uintptr_t)s % 4 && n; n--) *d++ = *s++;
 
-	if ((uintptr_t)d % 4 == 0) {
+	if ((sel4runtime_uintptr_t)d % 4 == 0) {
 		for (; n>=16; s+=16, d+=16, n-=16) {
 			*(u32 *)(d+0) = *(u32 *)(s+0);
 			*(u32 *)(d+4) = *(u32 *)(s+4);
@@ -71,7 +71,7 @@ void *__sel4runtime_memcpy(void *restrict dest, const void *restrict src, size_t
 		return dest;
 	}
 
-	if (n >= 32) switch ((uintptr_t)d % 4) {
+	if (n >= 32) switch ((sel4runtime_uintptr_t)d % 4) {
 	case 1:
 		w = *(u32 *)s;
 		*d++ = *s++;

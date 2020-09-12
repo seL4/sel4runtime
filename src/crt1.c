@@ -38,7 +38,7 @@ void __sel4_start_c(void const *stack)
     // The environment pointer vector follows after the argv.
     char const *const *envp = &argv[argc + 1];
     int envc = 0;
-    while (envp[envc] != NULL) {
+    while (envp[envc] != SEL4RUNTIME_NULL) {
         envc++;
     }
 

@@ -26,10 +26,10 @@
 
 #include "util.h"
 
-void *__sel4runtime_memset(void *dest, int c, size_t n)
+void *__sel4runtime_memset(void *dest, int c, sel4runtime_size_t n)
 {
 	unsigned char *s = dest;
-	size_t k;
+	sel4runtime_size_t k;
 
 	/* Fill head and tail with minimal branching. Each
 	 * conditional ensures that all the subsequently used
@@ -49,14 +49,14 @@ void *__sel4runtime_memset(void *dest, int c, size_t n)
 	 * already took care of any head/tail that get cut off
 	 * by the alignment. */
 
-	k = -(uintptr_t)s & 3;
+	k = -(sel4runtime_uintptr_t)s & 3;
 	s += k;
 	n -= k;
 	n &= -4;
 
 #ifdef __GNUC__
-	typedef uint32_t __attribute__((__may_alias__)) u32;
-	typedef uint64_t __attribute__((__may_alias__)) u64;
+	typedef sel4runtime_uint32_t __attribute__((__may_alias__)) u32;
+	typedef sel4runtime_uint64_t __attribute__((__may_alias__)) u64;
 
 	u32 c32 = ((u32)-1)/255 * (unsigned char)c;
 
@@ -87,7 +87,7 @@ void *__sel4runtime_memset(void *dest, int c, size_t n)
 	 * and avoid writing the same bytes twice as much as is
 	 * practical without introducing additional branching. */
 
-	k = 24 + ((uintptr_t)s & 4);
+	k = 24 + ((sel4runtime_uintptr_t)s & 4);
 	s += k;
 	n -= k;
 
