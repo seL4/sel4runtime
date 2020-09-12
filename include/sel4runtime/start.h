@@ -12,7 +12,7 @@
 #pragma once
 
 #include <sel4runtime/auxv.h>
-#include <elf.h>
+#include <sel4runtime/elf.h>
 #include <sel4runtime/mode/elf.h>
 
 // Entry into C program.

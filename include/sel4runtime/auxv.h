@@ -11,6 +11,17 @@
  */
 #pragma once
 
+// Standard auciliary vector values
+#define AT_NULL      0
+#define PT_LOAD      1
+#define PT_DYNAMIC   2
+#define AT_PHDR      3
+#define AT_PHENT     4
+#define AT_PHNUM     5
+#define PT_TLS       7
+#define PT_NUM       8
+#define AT_SYSINFO  32
+
 // seL4-specific auxiliary vector values.
 #define AT_SEL4_BOOT_INFO         64
 #define AT_SEL4_CSPACE_DESCRIPTOR 65

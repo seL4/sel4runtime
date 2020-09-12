@@ -9,7 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
-#include <elf.h>
+#include <sel4runtime/elf.h>
 
 #pragma once
 
