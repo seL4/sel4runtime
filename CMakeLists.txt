@@ -95,6 +95,7 @@ list(
         src/init.c
         src/memset.c
         src/memcpy.c
+        src/vsyscall.c
 )
 if(("${KernelSel4Arch}" STREQUAL "aarch32") OR ("${KernelSel4Arch}" STREQUAL "arm_hyp"))
     list(

@@ -24,9 +24,6 @@
 #define MIN_ALIGN_BYTES 16
 #define MIN_ALIGNED __attribute__((aligned (MIN_ALIGN_BYTES)))
 
-// Global vsyscall handler (defined in musllibc)
-extern sel4runtime_size_t __sysinfo;
-
 // Static TLS for initial thread.
 static char static_tls[CONFIG_SEL4RUNTIME_STATIC_TLS] MIN_ALIGNED = {};
 
@@ -302,10 +299,6 @@ static void parse_auxv(auxv_t const auxv[])
         }
         case AT_PHDR: {
             env.program_header.headers = auxv[i].a_un.a_ptr;
-            break;
-        }
-        case AT_SYSINFO: {
-            __sysinfo = (sel4runtime_size_t)(auxv[i].a_un.a_ptr);
             break;
         }
         case AT_SEL4_BOOT_INFO: {
