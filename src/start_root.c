@@ -55,41 +55,45 @@ void __sel4_start_root(seL4_BootInfo *boot_info)
         .p_align = sizeof(seL4_Word),
     };
 
-    auxv_t auxv[] = {
-        {
-            .a_type = AT_PHENT,
-            .a_un.a_val = sizeof(Elf32_Phdr),
-        }, {
-            .a_type = AT_PHNUM,
-            .a_un.a_val = 1,
-        }, {
-            .a_type = AT_PHDR,
-            .a_un.a_ptr = &tls_header,
-        }, {
-            .a_type = AT_SYSINFO,
-            .a_un.a_ptr = &sel4_vsyscall,
-        }, {
-            .a_type = AT_SEL4_BOOT_INFO,
-            .a_un.a_ptr = boot_info,
-        }, {
-            .a_type = AT_SEL4_TCB,
-            .a_un.a_val = seL4_CapInitThreadTCB,
-        }, {
-            // Null terminating entry
-            .a_type = AT_NULL,
-            .a_un.a_val = 0
+    struct {
+        char const *const argv[2];
+        char const *const envp[2];
+        auxv_t auxv[7];
+    } info = {
+        .argv = {
+            "rootserver",
+            SEL4RUNTIME_NULL,
+        },
+        .envp = {
+            "seL4=1",
+            SEL4RUNTIME_NULL,
+        },
+        .auxv = {
+            {
+                .a_type = AT_PHENT,
+                .a_un.a_val = sizeof(Elf32_Phdr),
+            }, {
+                .a_type = AT_PHNUM,
+                .a_un.a_val = 1,
+            }, {
+                .a_type = AT_PHDR,
+                .a_un.a_ptr = &tls_header,
+            }, {
+                .a_type = AT_SYSINFO,
+                .a_un.a_ptr = &sel4_vsyscall,
+            }, {
+                .a_type = AT_SEL4_BOOT_INFO,
+                .a_un.a_ptr = boot_info,
+            }, {
+                .a_type = AT_SEL4_TCB,
+                .a_un.a_val = seL4_CapInitThreadTCB,
+            }, {
+                // Null terminating entry
+                .a_type = AT_NULL,
+                .a_un.a_val = 0
+            },
         },
     };
 
-    char const *const envp[] = {
-        "seL4=1",
-        SEL4RUNTIME_NULL,
-    };
-
-    char const *const argv[] = {
-        "rootserver",
-        SEL4RUNTIME_NULL,
-    };
-
-    __sel4runtime_start_main(main, ARRAY_LENGTH(argv), argv, envp, auxv);
+    __sel4runtime_start_main(main, ARRAY_LENGTH(info.argv), info.argv, info.envp, info.auxv);
 }
