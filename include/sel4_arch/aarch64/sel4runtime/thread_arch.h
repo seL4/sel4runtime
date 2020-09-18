@@ -14,33 +14,38 @@
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline sel4runtime_uintptr_t sel4runtime_read_tpidr_el0(void) {
+static inline sel4runtime_uintptr_t sel4runtime_read_tpidr_el0(void)
+{
     sel4runtime_uintptr_t reg;
-    __asm__ __volatile__ ("mrs %0,tpidr_el0" : "=r"(reg));
+    __asm__ __volatile__("mrs %0,tpidr_el0" : "=r"(reg));
     return reg;
 }
 
-static inline void sel4runtime_write_tpidr_el0(sel4runtime_uintptr_t reg) {
-    __asm__ __volatile__ ("msr tpidr_el0,%0" :: "r"(reg));
+static inline void sel4runtime_write_tpidr_el0(sel4runtime_uintptr_t reg)
+{
+    __asm__ __volatile__("msr tpidr_el0,%0" :: "r"(reg));
 }
 
-static inline sel4runtime_uintptr_t sel4runtime_read_tpidrro_el0(void) {
+static inline sel4runtime_uintptr_t sel4runtime_read_tpidrro_el0(void)
+{
     sel4runtime_uintptr_t reg;
-    __asm__ __volatile__ ("mrs %0,tpidrro_el0" : "=r"(reg));
+    __asm__ __volatile__("mrs %0,tpidrro_el0" : "=r"(reg));
     return reg;
 }
 
 /*
  * Obtain the value of the TLS base for the current thread.
  */
-static inline sel4runtime_uintptr_t sel4runtime_get_tls_base(void) {
+static inline sel4runtime_uintptr_t sel4runtime_get_tls_base(void)
+{
     return sel4runtime_read_tpidr_el0();
 }
 
 /*
  * Set the value of the TLS base for the current thread.
  */
-static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base) {
+static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base)
+{
     sel4runtime_write_tpidr_el0(tls_base);
 }
 
