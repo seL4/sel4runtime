@@ -95,5 +95,5 @@ void __sel4_start_root(seL4_BootInfo *boot_info)
         },
     };
 
-    __sel4runtime_start_main(main, ARRAY_LENGTH(info.argv), info.argv, info.envp, info.auxv);
+    __sel4runtime_start_main(main, ARRAY_LENGTH(info.argv) - 1, info.argv, info.envp, info.auxv);
 }
