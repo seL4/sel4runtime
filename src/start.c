@@ -21,6 +21,8 @@ void __sel4runtime_start_main(
     auxv_t const auxv[]
 )
 {
+    __init_libc(envp, argv[0]);
+
     __sel4runtime_load_env(argc, argv, envp, auxv);
 
     sel4runtime_exit(main(argc, argv, envp));
