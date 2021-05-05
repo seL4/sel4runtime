@@ -13,8 +13,14 @@
 #include <sel4/arch/constants.h>
 #include <sel4runtime/stdint.h>
 
-#if ((__ARM_ARCH_6K__ || __ARM_ARCH_6ZK__) && !__thumb__) \
- || __ARM_ARCH_7A__ || __ARM_ARCH_7R__ || __ARM_ARCH >= 7
+#if ((\
+            defined(__ARM_ARCH_6K__) || \
+            defined(__ARM_ARCH_6ZK__) \
+        ) && !defined(__thumb__) \
+    ) || \
+    defined(__ARM_ARCH_7A__) || \
+    defined(__ARM_ARCH_7R__) || \
+    (defined(__ARM_ARCH) && __ARM_ARCH >= 7)
 
 static inline sel4runtime_uintptr_t sel4runtime_read_tpidr_el0(void)
 {
@@ -76,6 +82,8 @@ static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base)
 #else
 #error "No way to set TLS base provided."
 #endif
+#else
+#error "No TLS mechanism provided."
 #endif /* CONFIG_SET_TLS_BASE_SELF */
 
 /*
