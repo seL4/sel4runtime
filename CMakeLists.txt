@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.12.0)
 
-project(sel4runtime C)
+project(sel4runtime C ASM)
 
 set(configure_string "")
 config_string(
@@ -95,7 +95,7 @@ list(
 if(("${KernelSel4Arch}" STREQUAL "aarch32") OR ("${KernelSel4Arch}" STREQUAL "arm_hyp"))
     list(
         APPEND
-            sources src/sel4_arch/${KernelSel4Arch}/__aeabi_read_tp.s
+            sources src/sel4_arch/${KernelSel4Arch}/__aeabi_read_tp.S
             src/sel4_arch/${KernelSel4Arch}/__aeabi_read_tp_c.c
     )
 endif()
