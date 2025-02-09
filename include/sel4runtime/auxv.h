@@ -12,6 +12,7 @@
 #define AT_PHDR      3
 #define AT_PHENT     4
 #define AT_PHNUM     5
+#define AT_PAGESZ    6
 #define PT_TLS       7
 #define PT_NUM       8
 #define AT_SYSINFO  32
