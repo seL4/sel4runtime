@@ -35,7 +35,14 @@ static inline sel4runtime_uintptr_t sel4runtime_read_tpidrro_el0(void)
  */
 static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base)
 {
+#if defined(CONFIG_ARM_TLS_REG_TPIDRU)
     sel4runtime_write_tpidr_el0(tls_base);
+#elif CONFIG_ARM_TLS_REG_TPIDRURO
+    seL4_SetTLSBase(tls_base);
+#else
+#error "TLS register not set."
+#endif /* CONFIG_SET_TLS_BASE_SELF */
+
 }
 
 #else
@@ -47,7 +54,13 @@ static inline void sel4runtime_set_tls_base(sel4runtime_uintptr_t tls_base)
  */
 static inline sel4runtime_uintptr_t sel4runtime_get_tls_base(void)
 {
+#ifdef CONFIG_ARM_TLS_REG_TPIDRU
     return sel4runtime_read_tpidr_el0();
+#elif CONFIG_ARM_TLS_REG_TPIDRURO
+    return sel4runtime_read_tpidrro_el0();
+#else
+#error "TLS register not set."
+#endif /* CONFIG_SET_TLS_BASE_SELF */
 }
 
 #define TLS_ABOVE_TP
