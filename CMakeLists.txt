@@ -12,7 +12,7 @@
 # Use src as private includes for crt and sel4runtime.
 # Use include as public includes for crt and sel4runtime.
 
-cmake_minimum_required(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 project(sel4runtime C ASM)
 
